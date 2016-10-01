@@ -53,7 +53,7 @@ INSERT INTO students VALUES(1,'Maria White','English','FR',18, 3.5);
 INSERT INTO students VALUES(2,'Charles Harris','Architecture','SO',19, 4.0);
 INSERT INTO students VALUES(3,'Susan Martin','Law','JR',20, 2.7);
 INSERT INTO students VALUES(4,'Joseph Thompson','Computer Science','SR',22, 4.0);
-INSERT INTO students VALUES(5,'Christopher Garcia','Computer Science','GR',25, 3.5);
+--INSERT INTO students VALUES(5,'Christopher Garcia','Computer Science','GR',25, 3.5);
 --faculty
 INSERT INTO faculty VALUES(1,'Ivana Teach',1);
 INSERT INTO faculty VALUES(2,'James Smith',1);
@@ -61,8 +61,10 @@ INSERT INTO faculty VALUES(3,'Mary Johnson',2);
 --courses
 INSERT INTO courses VALUES(1, 'Data Structures', 'UG', 3.0);
 INSERT INTO courses VALUES(2, 'Database Systems', 'GR', 3.0);
+INSERT INTO courses VALUES(3, 'Algorithms','UG', 3.0);
 --offerings
 INSERT INTO offerings VALUES(1, 1, 'MWF', '10:00', '10:50','R128', 5, 1);
 INSERT INTO offerings VALUES(2, 1, 'TR', '13:00', '14:15', '1320 DCL', 5, 2);
+INSERT INTO offerings VALUES(3, 3, 'FS', '1:00', '2:00', 'SIEL' , 5, 1);
 --enrolled
 INSERT INTO enrolled VALUES(4,1);
