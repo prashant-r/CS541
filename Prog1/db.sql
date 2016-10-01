@@ -65,6 +65,8 @@ INSERT INTO courses VALUES(3, 'Algorithms','UG', 3.0);
 --offerings
 INSERT INTO offerings VALUES(1, 1, 'MWF', '10:00', '10:50','R128', 5, 1);
 INSERT INTO offerings VALUES(2, 1, 'TR', '13:00', '14:15', '1320 DCL', 5, 2);
-INSERT INTO offerings VALUES(3, 3, 'FS', '1:00', '2:00', 'SIEL' , 5, 1);
+INSERT INTO offerings VALUES(3, 3, 'TR', '1:00', '2:00', 'SIEL' , 2, 1);
+INSERT INTO offerings VALUES(4, 3, 'TR', '10:00', '10:10', 'GL', 2, 1);
 --enrolled
 INSERT INTO enrolled VALUES(4,1);
+INSERT INTO enrolled VALUES(3,3);

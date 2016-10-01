@@ -81,11 +81,12 @@ AS
 CURSOR c1(my_standing VARCHAR2, my_snum INTEGER) IS
 	Select O1.* from 
 	  (select O3.* from offerings O3 inner join courses C3 on C3.cnum = O3.cnum
-	   where ((C3.course_level = 'UG') or (C3.course_level  = 'GR' and my_standing = 'GR')) and C3.cnum not in (Select C4.cnum from Courses C4 inner join Offerings O4 on C4.cnum = O4.cnum inner join Enrolled E4 on E4.onum = O4.onum where E4.snum = my_snum)) O1
+	   where ((C3.course_level = 'UG') or (C3.course_level  = 'GR' and my_standing = 'GR')) and C3.cnum not in (Select C4.cnum from Courses C4 inner join Offerings O4 on C4.cnum = O4.cnum inner join Enrolled E4 on E4.onum = O4.onum where E4.snum = my_snum)
+	   and O3.onum not in (Select ocpnum from (Select O6.onum as ocpnum, O6.max_occupancy from offerings O6 inner join enrolled E6 on O6.onum = E6.onum group by O6.onum, O6.max_occupancy having count(E6.snum) = O6.max_occupancy) beta)) O1
 	  , 
 	  (select O5.* from Offerings O5 inner join Enrolled E5 on O5.onum = E5.onum 
 	   and E5.snum = my_snum ) O2				 
-	WHERE O2.starttime >= O1.endtime OR O2.endtime <= O1.starttime;
+	WHERE (O2.starttime >= O1.endtime OR O2.endtime <= O1.starttime) OR (O2.day != O1.day);
 BEGIN
   FOR itemA IN (
     SELECT *
