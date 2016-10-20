@@ -1,6 +1,7 @@
 package tests;
 
 import global.Convert;
+import global.GlobalConst;
 /** Note that in JAVA, methods can't be overridden to be more private.
     Therefore, the declaration of all private functions are now declared
     protected as opposed to the private type in C++.
