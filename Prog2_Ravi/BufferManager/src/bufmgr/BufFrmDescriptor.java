@@ -9,7 +9,7 @@ import global.GlobalConst;
 import global.Page;
 import global.PageId;
 
-public class BufFrmDescriptor {
+public class BufFrmDescriptor implements Comparable<BufFrmDescriptor> {
 	
 //-----------------------------------------------------------------------------------------------------------
 	// Class declarations and access methods
@@ -54,6 +54,29 @@ public class BufFrmDescriptor {
 		this.frame_data = Arrays.copyOf(page.getData(), page.getData().length);
 	}
 	
+	private double crf(int currentTime)
+	{
+		double crf =0.0;
+		for(int a =0 ; a < referenceTimes.size(); a++)
+		{
+			crf = crf + (1/ ( X(referenceTimes.get(a), currentTime) + 1));
+		}
+		return crf;
+	}
+	
+	private int X(int referenceTime, int currentTime)
+	{
+		return currentTime - referenceTime;
+	}
+
+	@Override
+	public int compareTo(BufFrmDescriptor o) {
+		double crfA = this.crf(BufMgr.ctime);
+		double crfB = o.crf(BufMgr.ctime);
+		if(crfA > crfB) return 1;
+		else if(crfA < crfB) return -1;
+		return 0;
+	}
 	
 	
 }

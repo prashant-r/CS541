@@ -4,15 +4,17 @@ import global.Page;
 import global.PageId;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import chainexception.ChainException;
 import global.Minibase;
 
-public class BufMgr {
 
-	public EvictionPolicy policy;
+public class BufMgr {
 	public BufFrmDescriptor[] bufDescr;
-	int ctime;
+	public static int ctime;
 
 	/**
 	 * Create the BufMgr object. Allocate pages (frames) for the buffer pool in
@@ -35,15 +37,6 @@ public class BufMgr {
 		bufDescr = new BufFrmDescriptor[numbufs];
 		for (int a = 0; a < numbufs; a++)
 			bufDescr[a] = new BufFrmDescriptor(a);
-
-		// Set the replacement policy
-		switch (replacementPolicy) {
-		case "LRFU":
-			this.policy = new LRFUPolicy();
-		default:
-			this.policy = new LRFUPolicy();
-		}
-
 	};
 
 	/**
@@ -68,6 +61,8 @@ public class BufMgr {
 
 		// Check if this page is already in the buffer pool.
 		Integer fr_id = BufFrmDescriptor.getFrameIDForPageId(pageno.pid);
+		
+		// Increment the time
 		ctime++;
 
 		// If it is, increment the pin_count
@@ -81,8 +76,25 @@ public class BufMgr {
 			bfd.referenceTimes.add(ctime);
 			page.setpage(bfd.frame_data);
 		} else {
+			
 			// It is not in the pool, choose a page to replace.
-
+			List<BufFrmDescriptor> bufs = Arrays.asList(bufDescr);
+			BufFrmDescriptor toEvict = Collections.min(bufs);
+			
+			// If toEvict page is dirty then write it out.
+			if(toEvict.dirty)
+			{
+				try{
+				Minibase.DiskManager.write_page(toEvict.page_number, new Page(toEvict.frame_data));
+				}
+				catch(Exception e)
+				{
+					throw new ChainException(e, "ERROR MSG : write to disk failed.");
+				}
+			}
+			
+			
+			
 		}
 
 	};
@@ -101,6 +113,21 @@ public class BufMgr {
 	 *            the dirty bit of the frame
 	 */
 	public void unpinPage(PageId pageno, boolean dirty) throws ChainException {
+		
+		Integer fr_id = BufFrmDescriptor.getFrameIDForPageId(pageno.pid);
+		BufFrmDescriptor bufd = bufDescr[fr_id];
+		
+		if(bufd.pin_count >0)
+		{
+			if(dirty)
+				bufd.dirty = true;
+			bufd.pin_count --;
+		}
+		else
+		{
+			throw new ChainException(null, " ERROR MSG : page was unpinned."); 
+		}
+		
 	};
 
 	/**
