@@ -26,6 +26,8 @@ public class BufFrmDescriptor implements Comparable<BufFrmDescriptor> {
 //---------------------------------------------------------------------------------------------------------------	
 	// Object declarations and access methods
 //---------------------------------------------------------------------------------------------------------------	
+	
+	// TODO: Change refer to system time
 	List<Integer> referenceTimes;
 	int pin_count;
 	byte[] frame_data;
@@ -73,9 +75,9 @@ public class BufFrmDescriptor implements Comparable<BufFrmDescriptor> {
 	public int compareTo(BufFrmDescriptor o) {
 		double crfA = this.crf(BufMgr.ctime);
 		double crfB = o.crf(BufMgr.ctime);
-		if(crfA > crfB) return 1;
-		else if(crfA < crfB) return -1;
-		return 0;
+		return crfA < crfB ? -1
+		         : crfA > crfB ? 1
+		         : 0;
 	}
 	
 	

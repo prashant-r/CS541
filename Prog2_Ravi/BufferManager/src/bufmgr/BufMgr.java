@@ -14,6 +14,8 @@ import global.Minibase;
 
 public class BufMgr {
 	public BufFrmDescriptor[] bufDescr;
+	
+	// TODO: change to system time
 	public static int ctime;
 
 	/**
@@ -81,19 +83,15 @@ public class BufMgr {
 			List<BufFrmDescriptor> bufs = Arrays.asList(bufDescr);
 			BufFrmDescriptor toEvict = Collections.min(bufs);
 			
+			// And increment its pin count
+			toEvict.pin_count = 1;
+			
 			// If toEvict page is dirty then write it out.
 			if(toEvict.dirty)
-			{
-				try{
-				Minibase.DiskManager.write_page(toEvict.page_number, new Page(toEvict.frame_data));
-				}
-				catch(Exception e)
-				{
-					throw new ChainException(e, "ERROR MSG : write to disk failed.");
-				}
-			}
+				flushPage(toEvict.page_number);
 			
-			
+			// Bring the new page into frame
+			toEvict.insertIntoFrame(page, pageno);
 			
 		}
 
@@ -115,6 +113,12 @@ public class BufMgr {
 	public void unpinPage(PageId pageno, boolean dirty) throws ChainException {
 		
 		Integer fr_id = BufFrmDescriptor.getFrameIDForPageId(pageno.pid);
+		// TODO : must throw hash exception
+//		if(fr_id == null)
+//		{
+//			throw ChainException(null, "ERROR MSG : page not in buffer pool");
+//		}
+		
 		BufFrmDescriptor bufd = bufDescr[fr_id];
 		
 		if(bufd.pin_count >0)
