@@ -237,9 +237,7 @@ class BMDriver extends TestDriver implements GlobalConst {
 			}
 
 			if ( status == OK ) {
-
 				int data = 0;
-
 				try {
 					data = Convert.getIntValue (0, pg.getpage());
 				}
@@ -252,7 +250,7 @@ class BMDriver extends TestDriver implements GlobalConst {
 					if (data != (pid.pid) + 99999) {
 						status = FAIL;
 						System.err.print ("*** Read wrong data back from page " 
-								+ pid.pid + "\n");
+								+ pid.pid  + "\n");
 					}
 				}
 

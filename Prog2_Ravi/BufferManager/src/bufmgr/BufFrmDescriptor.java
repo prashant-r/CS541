@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import chainexception.ChainException;
 import global.GlobalConst;
 import global.Page;
 import global.PageId;
@@ -17,11 +18,22 @@ public class BufFrmDescriptor implements Comparable<BufFrmDescriptor> {
 
 	private static MyHashTable pageId_frameId_lookup = new MyHashTable();
 	
-	public static Integer getFrameIDForPageId(Integer pid)
+	public static Integer getFrameIDForPageID(Integer pid) throws ChainException
 	{
-		if(!pageId_frameId_lookup.containsKey(pid)) return null;
+		if(!pageId_frameId_lookup.containsKey(pid))
+		{
+			throw new HashEntryNotFoundException(new Exception(),"ERROR MSG : Hash entry not found exception.");
+		}
 		return pageId_frameId_lookup.get(pid);
 	}
+	
+	
+	public static void removeFrameIDForPageID(Integer pid)
+	{
+		pageId_frameId_lookup.remove(pid);
+		return;
+	}	
+	
 		
 //---------------------------------------------------------------------------------------------------------------	
 	// Object declarations and access methods
@@ -42,11 +54,27 @@ public class BufFrmDescriptor implements Comparable<BufFrmDescriptor> {
 		this.fid = fid;
 		this.dirty = false;
 		referenceTimes = new ArrayList<Integer>();
+		page_number = null;
+	}
+	
+	public void resetFrame()
+	{
+		if(page_number != null)	
+			if(pageId_frameId_lookup.get(page_number.pid).equals(fid))
+				pageId_frameId_lookup.remove(page_number.pid);
+		this.pin_count = 0;
+		this.frame_data = new byte[GlobalConst.PAGE_SIZE];
+		this.dirty = false;
+		referenceTimes = new ArrayList<Integer>();
+		
 	}
 	
 	public void insertIntoFrame(Page page, PageId pageId)
 	{
 		// Insert into lookup tables
+		
+		//System.out.println("Insert into hash " + pageId.pid  + " fid is "+ this.fid);
+		
 		pageId_frameId_lookup.put(pageId.pid, this.fid);
 		
 		// Update local vars
@@ -54,16 +82,29 @@ public class BufFrmDescriptor implements Comparable<BufFrmDescriptor> {
 		
 		// Update the data frame
 		this.frame_data = Arrays.copyOf(page.getData(), page.getData().length);
+		
+		// Update the crf time
+		this.referenceTimes.clear();
+		this.referenceTimes.add(BufMgr.ctime);
+		this.dirty = false;
+		this.pin_count = 1;
 	}
 	
-	private double crf(int currentTime)
+	@Override
+	public String toString() {
+		return "BufFrmDescriptor [crf = " +  crf(BufMgr.ctime) + ", pin_count=" + pin_count +  ", fid=" + fid + ", page_number=" + page_number + ", dirty=" + dirty
+				+ "]";
+	}
+
+
+	public double crf(int currentTime)
 	{
-		double crf =0.0;
+		double crfval =0.0;
 		for(int a =0 ; a < referenceTimes.size(); a++)
 		{
-			crf = crf + (1/ ( X(referenceTimes.get(a), currentTime) + 1));
+			crfval = crfval + (double)(1.0d/ ( X(referenceTimes.get(a), currentTime) + 1));
 		}
-		return crf;
+		return crfval;
 	}
 	
 	private int X(int referenceTime, int currentTime)
@@ -73,11 +114,9 @@ public class BufFrmDescriptor implements Comparable<BufFrmDescriptor> {
 
 	@Override
 	public int compareTo(BufFrmDescriptor o) {
-		double crfA = this.crf(BufMgr.ctime);
-		double crfB = o.crf(BufMgr.ctime);
-		return crfA < crfB ? -1
-		         : crfA > crfB ? 1
-		         : 0;
+		Double crfA = new Double(this.crf(BufMgr.ctime));
+		Double crfB = new Double(o.crf(BufMgr.ctime));
+		return crfA.compareTo(crfB);
 	}
 	
 	

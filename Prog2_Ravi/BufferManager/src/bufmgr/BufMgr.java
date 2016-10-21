@@ -11,12 +11,11 @@ import java.util.List;
 import chainexception.ChainException;
 import global.Minibase;
 
-
 public class BufMgr {
 	public BufFrmDescriptor[] bufDescr;
-	
+
 	// TODO: change to system time
-	public static int ctime;
+	public static int ctime = 0;
 
 	/**
 	 * Create the BufMgr object. Allocate pages (frames) for the buffer pool in
@@ -34,7 +33,6 @@ public class BufMgr {
 	 */
 
 	public BufMgr(int numbufs, int lookAheadSize, String replacementPolicy) {
-
 		// Allocate the pages (frames) for the buffer pool in main memory
 		bufDescr = new BufFrmDescriptor[numbufs];
 		for (int a = 0; a < numbufs; a++)
@@ -61,9 +59,20 @@ public class BufMgr {
 	 */
 	public void pinPage(PageId pageno, Page page, boolean emptyPage) throws ChainException {
 
+		// if (pageno.pid == 0)
+		// System.out.println("PINNING PAGE Page number " + pageno.pid);
+
 		// Check if this page is already in the buffer pool.
-		Integer fr_id = BufFrmDescriptor.getFrameIDForPageId(pageno.pid);
-		
+		Integer fr_id = null;
+		try {
+			fr_id = BufFrmDescriptor.getFrameIDForPageID(pageno.pid);
+		} catch (HashEntryNotFoundException e) {
+
+		}
+		// if (pageno.pid == 0 && fr_id != null)
+		// System.out.println("THE FRAME PIN COUNT IS " +
+		// bufDescr[fr_id].pin_count);
+
 		// Increment the time
 		ctime++;
 
@@ -78,21 +87,41 @@ public class BufMgr {
 			bfd.referenceTimes.add(ctime);
 			page.setpage(bfd.frame_data);
 		} else {
-			
-			// It is not in the pool, choose a page to replace.
+
+			// It is not in the pool, choose a frame to replace.
 			List<BufFrmDescriptor> bufs = Arrays.asList(bufDescr);
 			BufFrmDescriptor toEvict = Collections.min(bufs);
+
+			 System.out.println("FOUND this evict for page number " +
+			 pageno.pid);
 			
-			// And increment its pin count
-			toEvict.pin_count = 1;
-			
-			// If toEvict page is dirty then write it out.
-			if(toEvict.dirty)
-				flushPage(toEvict.page_number);
-			
-			// Bring the new page into frame
+			 System.out.println(toEvict);
+			// if (toEvict.page_number != null && toEvict.page_number.pid == 0)
+			// {
+			// System.out.println("THIS CHANGED ");
+			// }
+			//
+			if (toEvict.pin_count > 0) {
+				throw new BufferPoolExceededException(new Exception(),
+						"ERROR MSG : memory is no unpinned page frams available.");
+			}
+
+			try {
+				Minibase.DiskManager.read_page(pageno, page);
+			} catch (Exception e) {
+				throw new ChainException(e, "ERROR MSG: couldn't read from disk. ");
+			}
+
+			if (toEvict.page_number != null) {
+				if (toEvict.dirty)
+					flushPage(toEvict.page_number);
+				BufFrmDescriptor.removeFrameIDForPageID(toEvict.page_number.pid);
+			}
+			toEvict.dirty = false;
 			toEvict.insertIntoFrame(page, pageno);
-			
+
+			// System.out.println("Cool we are done " + toEvict);
+
 		}
 
 	};
@@ -111,27 +140,26 @@ public class BufMgr {
 	 *            the dirty bit of the frame
 	 */
 	public void unpinPage(PageId pageno, boolean dirty) throws ChainException {
-		
-		Integer fr_id = BufFrmDescriptor.getFrameIDForPageId(pageno.pid);
-		// TODO : must throw hash exception
-//		if(fr_id == null)
-//		{
-//			throw ChainException(null, "ERROR MSG : page not in buffer pool");
-//		}
-		
+
+		Integer fr_id = BufFrmDescriptor.getFrameIDForPageID(pageno.pid);
 		BufFrmDescriptor bufd = bufDescr[fr_id];
-		
-		if(bufd.pin_count >0)
-		{
-			if(dirty)
+		// if (pageno.pid == 0)
+		// System.out.println("UNPINNING PAGE NO. " + pageno.pid);
+		// if (pageno.pid == 0)
+		// System.out.println("THE FRAME PIN COUNT IS HEERE " +
+		// bufDescr[fr_id].pin_count);
+		if (bufd.pin_count > 0) {
+			if (dirty)
 				bufd.dirty = true;
-			bufd.pin_count --;
+			bufd.pin_count--;
+			// if (pageno.pid == 0)
+			// System.out.println("THE FRAME PIN COUNT IS HEERERRR " +
+			// bufDescr[fr_id].pin_count);
+		} else {
+
+			throw new PageUnpinnedException(new Exception(), " ERROR MSG : page was unpinned.");
 		}
-		else
-		{
-			throw new ChainException(null, " ERROR MSG : page was unpinned."); 
-		}
-		
+
 	};
 
 	/**
@@ -154,18 +182,19 @@ public class BufMgr {
 		try {
 			Minibase.DiskManager.allocate_page(pgId, howmany);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			throw new ChainException(e, "ERROR MSG : allocate page request to disk failed.");
 		}
 		try {
 			pinPage(pgId, firstpage, global.GlobalConst.PIN_MEMCPY);
-		} catch (Exception e) {
+		} catch (PagePinnedException e) {
 			try {
 				Minibase.DiskManager.deallocate_page(pgId, howmany);
 			} catch (Exception eprime) {
 				throw new ChainException(eprime, "ERROR MSG: deallocate several pages request in disk failed.");
 			}
 			return null;
+		} catch (Exception e) {
+			throw e;
 		}
 		return pgId;
 	};
@@ -178,13 +207,37 @@ public class BufMgr {
 	 *            the page number in the data base.
 	 */
 	public void freePage(PageId globalPageId) throws ChainException {
+		Integer fr_id = null;
+		try {
+			fr_id = BufFrmDescriptor.getFrameIDForPageID(globalPageId.pid);
+			// System.out.println("The frame' pid is " +
+			// bufDescr[fr_id].page_number.pid + " pin count is "
+			// + bufDescr[fr_id].pin_count + " frame id is " + fr_id);
+			if (bufDescr[fr_id].pin_count == 1) {
+				unpinPage(globalPageId, false);
+			} else if (bufDescr[fr_id].pin_count > 1) {
+				throw new PagePinnedException(new Exception(), "ERROR MSG: pin count is not 0 but free page called. ");
+			} else {
 
+			}
+		} catch (PagePinnedException e) {
+			throw e;
+		} catch (HashEntryNotFoundException e) {
+
+		} 
 		try {
 			Minibase.DiskManager.deallocate_page(globalPageId);
 		} catch (Exception e) {
 			throw new ChainException(e, "ERROR MSG: deallocate page request to disk failed.");
 		}
-
+		// If successful then remove from the map
+		if(fr_id != null)
+		{
+			if(bufDescr[fr_id].page_number.pid == globalPageId.pid)
+			{
+				bufDescr[fr_id].resetFrame();
+			}
+		}
 	};
 
 	/**
@@ -196,7 +249,7 @@ public class BufMgr {
 	 */
 	public void flushPage(PageId pageid) throws ChainException {
 
-		int fr_id = BufFrmDescriptor.getFrameIDForPageId(pageid.pid);
+		int fr_id = BufFrmDescriptor.getFrameIDForPageID(pageid.pid);
 		if (bufDescr[fr_id].page_number.pid == pageid.pid) {
 			if (bufDescr[fr_id].dirty) {
 				Page newpage = new Page(bufDescr[fr_id].frame_data);
@@ -205,6 +258,7 @@ public class BufMgr {
 				} catch (Exception e) {
 					throw new ChainException(e, "ERROR MSG: write to disk failed.");
 				}
+				bufDescr[fr_id].dirty = false;
 			}
 		}
 	};
@@ -235,7 +289,7 @@ public class BufMgr {
 		int numUnpinned = 0;
 		for (int a = 0; a < bufDescr.length; a++) {
 			if (bufDescr[a].pin_count == 0) {
-				numUnpinned = 0;
+				numUnpinned++;
 			}
 		}
 		return numUnpinned;
