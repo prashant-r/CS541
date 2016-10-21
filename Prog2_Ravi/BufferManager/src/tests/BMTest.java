@@ -116,12 +116,14 @@ class BMDriver extends TestDriver implements GlobalConst {
 		if (!test1()) { _passAll = FAIL; }    
 		if (!test2()) { _passAll = FAIL; }
 		if (!test3()) { _passAll = FAIL; }
-		if (!test4()) { _passAll = FAIL; }
-		if (!test5()) { _passAll = FAIL; }
-		if (!test6()) { _passAll = FAIL; }
-		if (!testPUT_GET()) { _passAll = FAIL; }
-		if (!testPUT_CONTAINS()) { _passAll = FAIL; }
-		if (!testPUT_REMOVE()) { _passAll = FAIL; }
+//		if (!test4()) { _passAll = FAIL; }
+//		if (!test5()) { _passAll = FAIL; }
+//		if (!test6()) { _passAll = FAIL; }
+//		
+//		// For hash table
+//		if (!testPUT_GET()) { _passAll = FAIL; }
+//		if (!testPUT_CONTAINS()) { _passAll = FAIL; }
+//		if (!testPUT_REMOVE()) { _passAll = FAIL; }
 		
 		
 
@@ -199,6 +201,7 @@ class BMDriver extends TestDriver implements GlobalConst {
 
 				try {
 					Convert.setIntValue (data, 0, pg.getpage());
+					//Minibase.BufferManager.myTester();
 				}
 				catch (IOException e) {
 					System.err.print ("*** Convert value failed\n");
@@ -240,6 +243,7 @@ class BMDriver extends TestDriver implements GlobalConst {
 				int data = 0;
 				try {
 					data = Convert.getIntValue (0, pg.getpage());
+					
 				}
 				catch (IOException e) {
 					System.err.print ("*** Convert value failed \n");
@@ -250,7 +254,7 @@ class BMDriver extends TestDriver implements GlobalConst {
 					if (data != (pid.pid) + 99999) {
 						status = FAIL;
 						System.err.print ("*** Read wrong data back from page " 
-								+ pid.pid  + "\n");
+								+ pid.pid  + "\n ");
 					}
 				}
 

@@ -1,12 +1,14 @@
 package bufmgr;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 import chainexception.ChainException;
+import global.Convert;
 import global.GlobalConst;
+import global.Minibase;
 import global.Page;
 import global.PageId;
 
@@ -47,7 +49,7 @@ public class BufFrmDescriptor implements Comparable<BufFrmDescriptor> {
 //---------------------------------------------------------------------------------------------------------------	
 	
 	// TODO: Change refer to system time
-	private List<Integer> referenceTimes;
+	private List<Long> referenceTimes;
 	private int pin_count;
 	private byte[] frame_data;
 	private Integer fid;
@@ -110,12 +112,12 @@ public class BufFrmDescriptor implements Comparable<BufFrmDescriptor> {
 		this.dirty = dirty;
 	}
 	
-	public List<Integer> getReferenceTimes() {
+	public List<Long> getReferenceTimes() {
 		return referenceTimes;
 	}
 
 
-	public void setReferenceTimes(List<Integer> referenceTimes) {
+	public void setReferenceTimes(List<Long> referenceTimes) {
 		this.referenceTimes = referenceTimes;
 	}
 
@@ -126,39 +128,43 @@ public class BufFrmDescriptor implements Comparable<BufFrmDescriptor> {
 	public BufFrmDescriptor(int fid) {
 		super();
 		this.pin_count = 0;
-		this.frame_data = new byte[GlobalConst.PAGE_SIZE];
+		this.frame_data = new byte[global.GlobalConst.PAGE_SIZE];
 		this.fid = fid;
 		this.dirty = false;
-		this.referenceTimes = new ArrayList<Integer>();
-		page_number = null;
+		this.referenceTimes = new ArrayList<Long>();
+		this.page_number = null;
 	}
 
 	public void resetFrame()
 	{
 		this.pin_count = 0;
-		this.frame_data = new byte[GlobalConst.PAGE_SIZE];
+		this.frame_data = null;
 		this.dirty = false;
-		referenceTimes.clear();
+		this.referenceTimes.clear();
 		this.page_number = null;
-		
+		this.frame_data = new byte[global.GlobalConst.PAGE_SIZE];
 	}
 	
-	public void insertIntoFrame(Page page, PageId pageId)
+	public void insertIntoFrame(Page page, PageId pageId) throws ChainException
 	{
-		// Insert into lookup tables
-		
-		//System.out.println("Insert into hash " + pageId.pid  + " fid is "+ this.fid);
-		
+		resetFrame();
+		page.setpage(frame_data);
+		try {
+			Minibase.DiskManager.read_page(pageId, page);
+		} catch (Exception e) {
+			throw new ChainException(e, "ERROR MSG: couldn't read from disk. ");
+		}
+		// Insert into lookup tables	
 		pageId_frameId_lookup.put(pageId.pid, this.fid);
 		
 		// Update local vars
 		this.setPage_number(pageId);
 		
 		// Update the data frame
-		this.setFrame_data(Arrays.copyOf(page.getData(), page.getData().length));
+		this.setFrame_data(page.getData());
 		
 		// Update the crf time
-		this.referenceTimes.add(BufMgr.ctime);
+		this.referenceTimes.add(BufMgr.getCurrentTime());
 		this.dirty = false;
 		this.pin_count = 1;
 	}
@@ -167,16 +173,27 @@ public class BufFrmDescriptor implements Comparable<BufFrmDescriptor> {
 	public String toString() {
 		if(page_number == null)
 		{
-			return "BufFrmDescriptor [crf = " +  crf(BufMgr.ctime) + " references" + referenceTimes +  ", pin_count=" + pin_count +  ", fid=" + fid + ", dirty=" + dirty
-					+ "current time " + BufMgr.ctime+  "]";	
-		}
-		else
-		return "BufFrmDescriptor [crf = " +  crf(BufMgr.ctime) + " references" + referenceTimes +  ", pin_count=" + pin_count +  ", fid=" + fid + ", page_number=" + page_number.pid + ", dirty=" + dirty
-				+ "current time " + BufMgr.ctime+  "]";
+			try {
+				return "BufFrmDescriptor [crf = " +  crf(BufMgr.getCurrentTime()) + " references" + referenceTimes +  ", pin_count=" + pin_count +  ", fid=" + fid  + " dirty=" + dirty
+						+ "current time " + BufMgr.getCurrentTime() + " data "  + Convert.getIntValue (0, getFrame_data()) +  "]";
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return "";
+			}	
+		} else
+			try {
+				return "BufFrmDescriptor [crf = " +  crf(BufMgr.getCurrentTime()) + " references" + referenceTimes +  ", pin_count=" + pin_count +  ", fid=" + fid + ", page_number=" + page_number.pid + ", dirty=" + dirty
+						+ "current time " + BufMgr.getCurrentTime() + " data "  + Convert.getIntValue (0, getFrame_data()) +  "]";
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return "";
+			}
 	}
 
 
-	public double crf(int currentTime)
+	public double crf(long currentTime)
 	{
 		double crfval =0.0;
 		for(int a =0 ; a < referenceTimes.size(); a++)
@@ -186,15 +203,15 @@ public class BufFrmDescriptor implements Comparable<BufFrmDescriptor> {
 		return crfval;
 	}
 	
-	private int X(int referenceTime, int currentTime)
+	private long X(long referenceTime, long currentTime)
 	{
 		return currentTime - referenceTime;
 	}
 
 	@Override
 	public int compareTo(BufFrmDescriptor o) {
-		Double crfA = new Double(this.crf(BufMgr.ctime));
-		Double crfB = new Double(o.crf(BufMgr.ctime));
+		Double crfA = new Double(this.crf(BufMgr.getCurrentTime()));
+		Double crfB = new Double(o.crf(BufMgr.getCurrentTime()));
 		return crfA.compareTo(crfB);
 	}
 	
