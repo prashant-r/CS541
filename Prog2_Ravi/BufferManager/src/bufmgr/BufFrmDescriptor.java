@@ -18,6 +18,12 @@ public class BufFrmDescriptor implements Comparable<BufFrmDescriptor> {
 
 	private static MyHashTable pageId_frameId_lookup = new MyHashTable();
 	
+	public static void resetPageId_frameId_lookup()
+	{
+		pageId_frameId_lookup = new MyHashTable();
+	}
+	
+	
 	public static Integer getFrameIDForPageID(Integer pid) throws ChainException
 	{
 		if(!pageId_frameId_lookup.containsKey(pid))
@@ -30,6 +36,7 @@ public class BufFrmDescriptor implements Comparable<BufFrmDescriptor> {
 	
 	public static void removeFrameIDForPageID(Integer pid)
 	{
+	//	System.out.println("Request to remove page id " + pid);
 		pageId_frameId_lookup.remove(pid);
 		return;
 	}	
@@ -40,32 +47,99 @@ public class BufFrmDescriptor implements Comparable<BufFrmDescriptor> {
 //---------------------------------------------------------------------------------------------------------------	
 	
 	// TODO: Change refer to system time
-	List<Integer> referenceTimes;
-	int pin_count;
-	byte[] frame_data;
-	Integer fid;
-	PageId page_number;
-	boolean dirty;
+	private List<Integer> referenceTimes;
+	private int pin_count;
+	private byte[] frame_data;
+	private Integer fid;
+	private PageId page_number;
+	private boolean dirty;
 	
+	
+	
+// ----------------------------------------------------------------------
+	// Getters and setters
+// ---------------------------------------------------------------------
+
+	public int getPin_count() {
+		return pin_count;
+	}
+
+
+	public void setPin_count(int pin_count) {
+		this.pin_count = pin_count;
+	}
+
+
+	public byte[] getFrame_data() {
+		return frame_data;
+	}
+
+
+	public void setFrame_data(byte[] frame_data) {
+		this.frame_data = frame_data;
+	}
+
+
+	public Integer getFid() {
+		return fid;
+	}
+
+
+	public void setFid(Integer fid) {
+		this.fid = fid;
+	}
+
+
+	public PageId getPage_number() {
+		return page_number;
+	}
+
+
+	public void setPage_number(PageId page_number) {
+		this.page_number = new PageId();
+		this.page_number.pid = page_number.pid;
+	}
+
+
+	public boolean isDirty() {
+		return dirty;
+	}
+
+
+	public void setDirty(boolean dirty) {
+		this.dirty = dirty;
+	}
+	
+	public List<Integer> getReferenceTimes() {
+		return referenceTimes;
+	}
+
+
+	public void setReferenceTimes(List<Integer> referenceTimes) {
+		this.referenceTimes = referenceTimes;
+	}
+
+
+//--------------------------------------------------------------------------------	
+	// Object defs
+//-------------------------------------------------------------------------------
 	public BufFrmDescriptor(int fid) {
 		super();
 		this.pin_count = 0;
 		this.frame_data = new byte[GlobalConst.PAGE_SIZE];
 		this.fid = fid;
 		this.dirty = false;
-		referenceTimes = new ArrayList<Integer>();
+		this.referenceTimes = new ArrayList<Integer>();
 		page_number = null;
 	}
-	
+
 	public void resetFrame()
 	{
-		if(page_number != null)	
-			if(pageId_frameId_lookup.get(page_number.pid).equals(fid))
-				pageId_frameId_lookup.remove(page_number.pid);
 		this.pin_count = 0;
 		this.frame_data = new byte[GlobalConst.PAGE_SIZE];
 		this.dirty = false;
-		referenceTimes = new ArrayList<Integer>();
+		referenceTimes.clear();
+		this.page_number = null;
 		
 	}
 	
@@ -78,13 +152,12 @@ public class BufFrmDescriptor implements Comparable<BufFrmDescriptor> {
 		pageId_frameId_lookup.put(pageId.pid, this.fid);
 		
 		// Update local vars
-		this.page_number = pageId;
+		this.setPage_number(pageId);
 		
 		// Update the data frame
-		this.frame_data = Arrays.copyOf(page.getData(), page.getData().length);
+		this.setFrame_data(Arrays.copyOf(page.getData(), page.getData().length));
 		
 		// Update the crf time
-		this.referenceTimes.clear();
 		this.referenceTimes.add(BufMgr.ctime);
 		this.dirty = false;
 		this.pin_count = 1;
@@ -92,8 +165,14 @@ public class BufFrmDescriptor implements Comparable<BufFrmDescriptor> {
 	
 	@Override
 	public String toString() {
-		return "BufFrmDescriptor [crf = " +  crf(BufMgr.ctime) + ", pin_count=" + pin_count +  ", fid=" + fid + ", page_number=" + page_number + ", dirty=" + dirty
-				+ "]";
+		if(page_number == null)
+		{
+			return "BufFrmDescriptor [crf = " +  crf(BufMgr.ctime) + " references" + referenceTimes +  ", pin_count=" + pin_count +  ", fid=" + fid + ", dirty=" + dirty
+					+ "current time " + BufMgr.ctime+  "]";	
+		}
+		else
+		return "BufFrmDescriptor [crf = " +  crf(BufMgr.ctime) + " references" + referenceTimes +  ", pin_count=" + pin_count +  ", fid=" + fid + ", page_number=" + page_number.pid + ", dirty=" + dirty
+				+ "current time " + BufMgr.ctime+  "]";
 	}
 
 
