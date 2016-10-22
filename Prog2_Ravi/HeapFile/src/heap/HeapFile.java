@@ -95,7 +95,7 @@ public class HeapFile {
 	}
 	public HeapScan openScan()
 	{
-		return null;
+		return new HeapScan(this);
 	}
 
 }
