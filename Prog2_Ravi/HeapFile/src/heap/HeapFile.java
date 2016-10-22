@@ -9,7 +9,7 @@ import global.PageId;
 
 import chainexception.ChainException;
 
-public class HeapFile<T> {
+public class HeapFile {
 	
 	List<PageId> pages;
 	
