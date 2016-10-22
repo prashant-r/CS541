@@ -1,6 +1,8 @@
 package tests;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import chainexception.ChainException;
 import global.Convert;
@@ -769,12 +771,28 @@ class HFDriver extends TestDriver implements GlobalConst
 			System.out.println ("  Test 4 completed successfully.\n");
 		return (status == OK);
 	}
-
+	
+	
+	/*
+	 * (non-Javadoc)
+	 * Test the binary search actually works
+	 * @see tests.TestDriver#test6()
+	 */
 	protected boolean test6 () {
-
+		
 		return true;
 	}
 
+	protected boolean test7 ()
+	{
+		return true;
+	}
+	
+	protected boolean test8()
+	{
+		return true;
+	}
+	
 	protected boolean runAllTests (){
 
 		boolean _passAll = OK;
@@ -783,9 +801,13 @@ class HFDriver extends TestDriver implements GlobalConst
 		if (!test2()) { _passAll = FAIL; }
 		if (!test3()) { _passAll = FAIL; }
 		if (!test4()) { _passAll = FAIL; }
-		if (!test5()) { _passAll = FAIL; }
-		if (!test6()) { _passAll = FAIL; }
-
+		if (!test5()) { _passAll = FAIL; }		
+		
+		// Test the capacity data structure
+		if(!test6()) { _passAll = FAIL;}
+		if(!test7()) { _passAll = FAIL;}
+		if(!test8()) { _passAll = FAIL;}
+		
 		return _passAll;
 	}
 

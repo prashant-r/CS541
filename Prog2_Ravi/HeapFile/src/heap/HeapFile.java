@@ -11,6 +11,11 @@ import chainexception.ChainException;
 
 public class HeapFile {
 	
+	//---------------------------------------------------------------------------------------------------------------	
+		// Object declarations and access methods
+	//---------------------------------------------------------------------------------------------------------------	
+		
+	
 	List<PageId> pages;
 	
 	public HeapFile(String name)
@@ -32,8 +37,7 @@ public class HeapFile {
 				Page page = new Page();
 				PageId pgId = Minibase.BufferManager.newPage(page, 1);
 				Minibase.DiskManager.add_file_entry(name, pgId);
-
-
+				
 			}
 			else
 			{
@@ -42,36 +46,19 @@ public class HeapFile {
 		}
 	}
 
-	TreeMap<Integer, LinkedList<PageId>> capacityPageQueue = new TreeMap<Integer, LinkedList<PageId>>();
+	private TreeMap<Integer, LinkedList<PageId>> capInfo = new TreeMap<Integer, LinkedList<PageId>>();
 
-
-	public PageId getFirstAvailableCapacity(int cap)
+	/*
+	 * Given a capacity size return page id of live page in heapfile
+	 * that satisifies this request.
+	 */
+	public PageId getPageWithAvailCapacity(int cap) throws Exception
 	{
-
-		List<Integer> possibleCapacities = new ArrayList<Integer>(capacityPageQueue.keySet());
-		binarySearchUB(possibleCapacities, cap);
-
-		return null;
+		// Note : can also use tree map function - ceilingEntry for same task.
+		LinkedList<PageId> ll = capInfo.ceilingEntry(cap).getValue();
+		if(ll.isEmpty()) throw new Exception("Poll attempted on empty LinkedList. "); 
+		return ll.poll();
 	}
-
-
-	public Integer binarySearchUB(List<Integer> searchSet, Integer toFind)
-	{
-		int low = 0;
-		int high = searchSet.size()-1;
-		int mid = low;
-		while(low < high)
-		{
-			mid = low + (high - low )/2;
-			int res = searchSet.get(mid).compareTo(toFind);
-			if(res >0) high = mid;
-			low = mid+1;
-		}
-		if (searchSet.get(mid).compareTo(toFind) != 0) high--;
-		return high;
-	}
-
-
 
 	public RID insertRecord(byte[] record) throws ChainException
 	{
