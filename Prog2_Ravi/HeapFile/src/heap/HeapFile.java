@@ -5,8 +5,6 @@ import java.util.*;
 import global.Minibase;
 import global.Page;
 import global.PageId;
-
-
 import chainexception.ChainException;
 
 public class HeapFile {
@@ -55,9 +53,11 @@ public class HeapFile {
 	public PageId getPageWithAvailCapacity(int cap) throws Exception
 	{
 		// Note : can also use tree map function - ceilingEntry for same task.
-		LinkedList<PageId> ll = capInfo.ceilingEntry(cap).getValue();
-		if(ll.isEmpty()) throw new Exception("Poll attempted on empty LinkedList. "); 
-		return ll.poll();
+		Map.Entry<Integer, LinkedList<PageId>> entry= capInfo.ceilingEntry(cap);
+		if(entry == null) return null;
+		LinkedList<PageId> pageOptions = entry.getValue();
+		if(pageOptions.isEmpty()) throw new Exception("Poll attempted on empty LinkedList. "); 
+		return pageOptions.poll();
 	}
 
 	public RID insertRecord(byte[] record) throws ChainException
