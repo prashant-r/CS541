@@ -2,6 +2,7 @@ package tests;
 
 import java.io.IOException;
 
+import chainexception.ChainException;
 import global.Convert;
 import global.GlobalConst;
 import global.Minibase;
