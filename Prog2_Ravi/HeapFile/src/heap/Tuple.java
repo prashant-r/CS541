@@ -11,8 +11,8 @@ public class Tuple {
         this.length = length;
     }
 
-    public Tuple(int length, byte[] data) {
-        this.length = length;
+    public Tuple(byte[] data) {
+        this.length = data.length;
         this.data = data;
     }
 
@@ -22,12 +22,21 @@ public class Tuple {
     }
     public int getLength()
     {
-        return 0;
+        return data.length;
     }
 
-    public byte[] getTupleByteArray()
+
+    public  void setData(byte[] data)
     {
-        return new byte[1];
+        this.data= data;
+    }
+
+    public byte[] getTupleByteArray() {
+        return data;
+    }
+
+    public void setlength(int tuple_length) {
+        this.length = tuple_length;
     }
 
 
