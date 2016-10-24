@@ -42,6 +42,7 @@ public class CapacityInfo
 			pageIds.add(y);
 			info.put(x, pageIds);			
 		}
+		System.out.println(info);
 		membershipInfo.add(y);
 	}
 	
@@ -59,7 +60,7 @@ public class CapacityInfo
 	{
 		if(containsKey(x))
 		{
-			if(info.get(x) == null || info.get(x).isEmpty()){ System.out.println("HeapFile.java:61 - -Warning: non existent value for key");return false;}
+			if(info.get(x) == null || info.get(x).isEmpty()){ System.out.println("CapacityInfo.java:63 - -Warning: non existent value for key");return false;}
 			if(info.get(x).contains(pageId))
 			{
 				return true;
@@ -70,16 +71,18 @@ public class CapacityInfo
 	
 	public void removeKey(Short x)
 	{
-		if(!containsKey(x)) System.out.println("HeapFile.java:64 - -Warning: trying to remove non existant key");
-		if(info.get(x).size() > 0) System.out.println("HeapFile.java:64 - - Trying to delete non empty key");
+		System.out.println("Remove key " + x);
+		if(!containsKey(x)) System.out.println("CapacityInfo.java:75 - -Warning: trying to remove non existant key");
+		if(info.get(x)!= null && info.get(x).size() > 0) System.out.println("CapacityInfo.java:64 - - Trying to delete non empty key");
 		info.remove(x);
 		
 	}
 	
 	public void removePageId(Short x, PageId pageid)
 	{
-		if(!containsKey(x)) System.out.println("HeapFile.java:75 - -Warning: trying to remove non existant key");
-		if(info.get(x) == null || info.get(x).isEmpty()){ System.out.println("HeapFile.java:79 - -Warning: non existent value for key");return;}
+		System.out.println("Remove size " + x + " page id " +pageid );
+		if(!containsKey(x)) System.out.println("CapacityInfo.java:84 - -Warning: trying to remove non existant key");
+		if(info.get(x) == null || info.get(x).isEmpty()){ System.out.println("CapacityInfo.java:85 - -Warning: non existent value for key") ; removeKey(x); return;}
 		info.get(x).remove(pageid);
 		membershipInfo.remove(pageid);
 	}
@@ -90,12 +93,13 @@ public class CapacityInfo
 		Entry<Short, TreeSet<PageId>> entry = info.ceilingEntry(cap);
 		if(entry== null) return null;
 		if(entry.getValue() == null) {
-			System.out.println("HeapFile.java:92 - -Warning: trying to get null vaulue for existent key -  - Hint: Should remove key instead.");
+			System.out.println("CapacityInfo.java:96 - -Warning: trying to get null vaulue for existent key -  - Hint: Should remove key instead.");
 			return null;
 		}
-		if(entry.getValue().isEmpty()) throw new ChainException(null ,"HeapFile.java:95 - -Warning:Poll attempted on empty LinkedList. "); 
+		if(entry.getValue().isEmpty()) throw new ChainException(null ,"CapacityInfo.java:99 - -Warning:Poll attempted on empty LinkedList. "); 
 		
 		PageId toRemove = entry.getValue().pollFirst();
+		if(entry.getValue().isEmpty()) removeKey(entry.getKey());
 		membershipInfo.remove(toRemove);
 		return toRemove;
 	}
