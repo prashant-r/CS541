@@ -4,6 +4,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Map.Entry;
@@ -19,12 +20,12 @@ public class CapacityInfo
 			return (new Integer(tv1.pid).compareTo(tv2.pid));
 		}
 	}
-	private TreeMap<Short, TreeSet<PageId>> capacityInfo;
+	private TreeMap<Short, LinkedList<PageId>> capacityInfo;
 	private LinkedHashSet<PageId> membershipInfo;
 	
 	public CapacityInfo()
 	{
-		capacityInfo =  new TreeMap<Short, TreeSet<PageId>>();
+		capacityInfo =  new TreeMap<Short, LinkedList<PageId>>();
 		membershipInfo = new LinkedHashSet<PageId>();
 	}
 	
@@ -37,7 +38,7 @@ public class CapacityInfo
 		}
 		else
 		{
-			TreeSet<PageId> pageIds = new TreeSet<PageId>(new PageIdComparator());
+			LinkedList<PageId> pageIds = new LinkedList<PageId>();
 			pageIds.add(y);
 			capacityInfo.put(x, pageIds);			
 		}
@@ -95,7 +96,7 @@ public class CapacityInfo
 	{
 		//System.out.println("getPageWithAvail  Request is " + cap);
 		// Note : can also use tree map function - ceilingEntry for same task.
-		Entry<Short, TreeSet<PageId>> entry = capacityInfo.ceilingEntry(cap);
+		Entry<Short, LinkedList<PageId>> entry = capacityInfo.ceilingEntry(cap);
 		if(entry== null) return null;
 		if(entry.getValue() == null) {
 			System.out.println("CapacityInfo.java:96 - -Warning: trying to get null vaulue for existent key -  - Hint: Should remove key instead.");
