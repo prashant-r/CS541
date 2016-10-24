@@ -187,7 +187,7 @@ public class HeapFile {
 		capacInfo.removePageId(hfpage.getFreeSpace(), pageid);
 
 		hfpage.deleteRecord(rid); // delete the rid in hfpage
-		capacInfo.insert((short)(hfpage.getFreeSpace()- rid.getLength()),pageid);
+		capacInfo.insert((short)(hfpage.getFreeSpace()),pageid);
 
 		global.Minibase.BufferManager.unpinPage(pageid, true); // modified, so unpin it with dirty bit
 		recordNumber--; // record number reduced

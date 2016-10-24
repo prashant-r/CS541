@@ -20,12 +20,12 @@ public class CapacityInfo
 			return (new Integer(tv1.pid).compareTo(tv2.pid));
 		}
 	}
-	private TreeMap<Short, LinkedList<PageId>> capacityInfo;
+	private TreeMap<Short, TreeSet<PageId>> capacityInfo;
 	private LinkedHashSet<PageId> membershipInfo;
 	
 	public CapacityInfo()
 	{
-		capacityInfo =  new TreeMap<Short, LinkedList<PageId>>();
+		capacityInfo =  new TreeMap<Short, TreeSet<PageId>>();
 		membershipInfo = new LinkedHashSet<PageId>();
 	}
 	
@@ -38,7 +38,7 @@ public class CapacityInfo
 		}
 		else
 		{
-			LinkedList<PageId> pageIds = new LinkedList<PageId>();
+			TreeSet<PageId> pageIds = new TreeSet<PageId>(new PageIdComparator());
 			pageIds.add(y);
 			capacityInfo.put(x, pageIds);			
 		}
@@ -50,7 +50,7 @@ public class CapacityInfo
 	
 	public boolean containsKey(Short x)
 	{
-		//System.out.println("containsKey Request is " + x );
+	//	System.out.println("containsKey Request is " + x );
 		return capacityInfo.containsKey(x);
 	}
 	
@@ -62,7 +62,7 @@ public class CapacityInfo
 	
 	public boolean containsKeyAndPageId(Short x, PageId pageId)
 	{
-		//System.out.println("ContainsKeyAndPageId Request is " + x + " " + pageId);
+	//	System.out.println("ContainsKeyAndPageId Request is " + x + " " + pageId);
 		if(containsKey(x))
 		{
 			if(capacityInfo.get(x) == null || capacityInfo.get(x).isEmpty()){ System.out.println("CapacityInfo.java:63 - -Warning: non existent value for key");return false;}
@@ -86,17 +86,36 @@ public class CapacityInfo
 	public void removePageId(Short x, PageId pageid)
 	{
 		//System.out.println("RemovePageId Request is size " + x + " page id " +pageid );
-		if(!containsKey(x)) System.out.println("CapacityInfo.java:84 - -Warning: trying to remove non existant key");
-		if(capacityInfo.get(x) == null || capacityInfo.get(x).isEmpty()){ System.out.println("CapacityInfo.java:85 - -Warning: non existent value for key") ; removeKey(x); return;}
+		if(!containsKey(x)){
+			System.out.println("CapacityInfo.java:84 - -ERROR: trying to remove non existant key");
+			return;
+		}
+		if(capacityInfo.get(x) == null || capacityInfo.get(x).isEmpty()){ 
+			System.out.println("CapacityInfo.java:85 - -ERROR: non existent value for key") ; 
+			return;
+		}
+//		
+//		System.out.println("State just before remove called .. .");
+//		System.out.println(capacityInfo);
+//		System.out.println(membershipInfo);
+		
 		capacityInfo.get(x).remove(pageid);
+		if(capacityInfo.get(x) == null || capacityInfo.get(x).isEmpty()){ 
+			removeKey(x);
+		}
+		
 		membershipInfo.remove(pageid);
+//		
+//		System.out.println("State right after remove called .. .");
+//		System.out.println(capacityInfo);
+//		System.out.println(membershipInfo);
 	}
 	
 	public PageId getPageWithAvailCapacity(Short cap) throws ChainException
 	{
-		//System.out.println("getPageWithAvail  Request is " + cap);
+		System.out.println("getPageWithAvail  Request is " + cap);
 		// Note : can also use tree map function - ceilingEntry for same task.
-		Entry<Short, LinkedList<PageId>> entry = capacityInfo.ceilingEntry(cap);
+		Entry<Short, TreeSet<PageId>> entry = capacityInfo.ceilingEntry(cap);
 		if(entry== null) return null;
 		if(entry.getValue() == null) {
 			System.out.println("CapacityInfo.java:96 - -Warning: trying to get null vaulue for existent key -  - Hint: Should remove key instead.");
@@ -112,20 +131,21 @@ public class CapacityInfo
 	
 	public LinkedHashSet<PageId> membership()
 	{
-		//System.out.println("Iterator Request is " + membershipInfo + " " + info);
+//		System.out.println("Iterator Request is " + membershipInfo);
+//		System.out.println("The capacity info is " + capacityInfo);
 		return membershipInfo;
 	}
 	
 	public boolean isEmpty()
 	{
-		//System.out.println("isEmpty Request is ");
+	//	System.out.println("isEmpty Request is ");
 		return membershipInfo.isEmpty();
 	}
 	
 	
 	public void reconstructMap(HFPage hfpage)
 	{
-		//System.out.println("Reconstruct Map request with HFPage " + hfpage.getFreeSpace() + " " + hfpage.getCurPage().pid);
+	//	System.out.println("Reconstruct Map request with HFPage " + hfpage.getFreeSpace() + " " + hfpage.getCurPage().pid);
 		insert(hfpage.getFreeSpace(),hfpage.getCurPage() );
 	}
 
