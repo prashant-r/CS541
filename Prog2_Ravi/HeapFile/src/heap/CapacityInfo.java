@@ -123,7 +123,7 @@ public class CapacityInfo
 	
 	public void reconstructMap(HFPage hfpage)
 	{
-		System.out.println("Reconstruct Map request with HFPage " + hfpage.getFreeSpace() + " " + hfpage.getCurPage().pid);
+		//System.out.println("Reconstruct Map request with HFPage " + hfpage.getFreeSpace() + " " + hfpage.getCurPage().pid);
 		insert(hfpage.getFreeSpace(),hfpage.getCurPage() );
 	}
 

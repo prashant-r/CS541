@@ -29,7 +29,6 @@ public class HeapScan {
         	Minibase.BufferManager.pinPage(currentPageId, page, false);
             currentPage = new HFPage(page);
             currentRid = currentPage.firstRecord();
-
         }
     }
 
@@ -57,24 +56,18 @@ public class HeapScan {
 
     public boolean hasNext()
     {
-        if(this.it==null) return false;
         return it.hasNext();
     }
 
     public Tuple getNext(RID rid)
-    {
-        if(!hasNext() && currentRid==null && currentPage!=null)
-            Minibase.BufferManager.unpinPage(currentPage.getCurPage(), false);
+    {        
         if (currentRid == null)
         {
-            while (it.hasNext())
-            {
-                   Page page=new Page();
-                   currentPageId = it.next();
-                   Minibase.BufferManager.pinPage(currentPageId, page, false);
-                   currentPage = new HFPage(page);
-                   currentRid = currentPage.firstRecord();
-            }
+
+            Minibase.BufferManager.unpinPage(currentPageId, false);
+        	rid.copyRID(currentRid);
+            currentRid = currentPage.nextRecord(currentRid);
+            return new Tuple(currentPage.selectRecord(rid)); 
         }
         else
         {
@@ -83,7 +76,6 @@ public class HeapScan {
             return new Tuple(currentPage.selectRecord(rid));
 
         }
-        return null;
     }
 
 }

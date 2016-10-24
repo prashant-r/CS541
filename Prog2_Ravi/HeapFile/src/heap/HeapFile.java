@@ -16,7 +16,7 @@ public class HeapFile {
 	//---------------------------------------------------------------------------------------------------------------	
 		// Object declarations and access methods
 	//---------------------------------------------------------------------------------------------------------------	
-
+	
 	private CapacityInfo capacInfo = new CapacityInfo();
 	int recordNumber=0;
 	private PageId firstpgId;
@@ -52,9 +52,12 @@ public class HeapFile {
 
 				Minibase.BufferManager.unpinPage(firstpgId, true);
 				
+				
+				
 			}
 			else
 			{
+
 				Page page = new Page();
 				global.Minibase.BufferManager.pinPage(firstpgId, page, false);  // if found; pin it ; accessing
 				current =new HFPage(page);  //// create a new HFPage with the page created before, make it as current Page
@@ -78,10 +81,6 @@ public class HeapFile {
 				}
 				
 				System.out.println(capacInfo);
-				while(true)
-				{
-					
-				}
 			}
 		}
 	}
@@ -131,11 +130,15 @@ public class HeapFile {
 		}
 		recordNumber++; // keep track of the record number
 		Minibase.BufferManager.unpinPage(pageId,true);
+		
+		
+		
 		return rid;
 
 	}
 	public Tuple getRecord(RID rid) throws ChainException
 	{
+
 		PageId pageid =  rid.pageno;
 		if(pageid== null ) return null;
 		Page page = new Page();
@@ -147,7 +150,9 @@ public class HeapFile {
 		Tuple tuple= new Tuple();
 		tuple.setData(hfpage.selectRecord(rid));
 		global.Minibase.BufferManager.unpinPage(pageid, false);
+		
 		return tuple;
+		
 	}
 
 	public boolean updateRecord(RID rid, Tuple newRecord) throws ChainException
