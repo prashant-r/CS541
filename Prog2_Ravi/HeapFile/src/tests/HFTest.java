@@ -1,15 +1,17 @@
 package tests;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import chainexception.ChainException;
 import global.Convert;
 import global.GlobalConst;
 import global.Minibase;
 import global.RID;
-import heap.*;
+import heap.HeapFile;
+import heap.HeapScan;
+import heap.Tuple;
+
+import java.io.IOException;
+
+import chainexception.ChainException;
+
 /** Note that in JAVA, methods can't be overridden to be more private.
     Therefore, the declaration of all private functions are now declared
     protected as opposed to the private type in C++.
@@ -237,7 +239,7 @@ class HFDriver extends TestDriver implements GlobalConst
 						System.err.println ("rec.name: " + rec.name
 								+ " should be " + name + "\n");
 						status = FAIL;
-						//break;
+						break;
 					}
 				}	
 				++i;
@@ -487,7 +489,6 @@ class HFDriver extends TestDriver implements GlobalConst
 						status = f.updateRecord(rid, newTuple); 
 					}
 					catch (Exception e) {
-						System.out.println("Here");
 						status = FAIL;
 						e.printStackTrace();
 					}
@@ -501,6 +502,12 @@ class HFDriver extends TestDriver implements GlobalConst
 			}
 		}
 
+		try {
+			scan.close();
+		} catch (ChainException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}	//  destruct scan!!!!!!!!!!!!!!!
 		scan = null;
 
 		if ( status == OK && Minibase.BufferManager.getNumUnpinned() 
@@ -741,6 +748,12 @@ class HFDriver extends TestDriver implements GlobalConst
 			}
 		}
 
+		try {
+			scan.close();
+		} catch (ChainException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}	//  destruct scan!!!!!!!!!!!!!!!
 		scan = null;
 
 		if ( status == OK ) {
@@ -773,28 +786,12 @@ class HFDriver extends TestDriver implements GlobalConst
 			System.out.println ("  Test 4 completed successfully.\n");
 		return (status == OK);
 	}
-	
-	
-	/*
-	 * (non-Javadoc)
-	 * Test the binary search actually works
-	 * @see tests.TestDriver#test6()
-	 */
+
 	protected boolean test6 () {
-		
+
 		return true;
 	}
 
-	protected boolean test7 ()
-	{
-		return true;
-	}
-	
-	protected boolean test8()
-	{
-		return true;
-	}
-	
 	protected boolean runAllTests (){
 
 		boolean _passAll = OK;
@@ -803,13 +800,9 @@ class HFDriver extends TestDriver implements GlobalConst
 		if (!test2()) { _passAll = FAIL; }
 		if (!test3()) { _passAll = FAIL; }
 		if (!test4()) { _passAll = FAIL; }
-		//if (!test5()) { _passAll = FAIL; }		
-		
-		// Test the capacity data structure
-		if(!test6()) { _passAll = FAIL;}
-		if(!test7()) { _passAll = FAIL;}
-		if(!test8()) { _passAll = FAIL;}
-		
+		if (!test5()) { _passAll = FAIL; }
+		if (!test6()) { _passAll = FAIL; }
+
 		return _passAll;
 	}
 
@@ -937,4 +930,3 @@ public class HFTest {
 		Runtime.getRuntime().exit(0);
 	}
 }
-
