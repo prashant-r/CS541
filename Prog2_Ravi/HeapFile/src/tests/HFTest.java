@@ -685,6 +685,7 @@ class HFDriver extends TestDriver implements GlobalConst
 				}
 				try {
 					status = f.updateRecord( rid, newTuple );
+					System.out.println("Here");
 				}
 				catch (ChainException e) { 
 					status = checkException (e, "heap.InvalidUpdateException");

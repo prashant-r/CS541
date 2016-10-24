@@ -6,6 +6,7 @@ public class Tuple {
 
     int length;
     byte[] data;
+    int offset;
     
     @Override
 	public String toString() {
@@ -16,6 +17,7 @@ public class Tuple {
     {
         this.data = data;
         this.length = length;
+        this.offset = 0;
     }
 
     public Tuple(byte[] data) {
@@ -29,17 +31,20 @@ public class Tuple {
     }
     public int getLength()
     {
-        return data.length;
+        return this.length;
     }
 
 
     public  void setData(byte[] data)
     {
         this.data= data;
+        this.length = this.data.length;
     }
 
     public byte[] getTupleByteArray() {
-        return data;
+		byte [] datacopy = new byte [this.length];
+		System.arraycopy(this.data, offset, datacopy, 0, this.length);
+		return datacopy;
     }
 
     public void setlength(int tuple_length) {

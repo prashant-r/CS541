@@ -95,7 +95,7 @@ public class HeapFile {
 	public RID insertRecord(byte[] record) throws ChainException
 	{
 		if (record.length > GlobalConst.MAX_TUPSIZE)
-			throw new ChainException(new Exception(),"Record is too large");
+			throw new heap.SpaceNotAvailableException("Record is too large");
 
 		PageId pageId=null;
 		HFPage hfPage= null;
@@ -157,6 +157,7 @@ public class HeapFile {
 
 	public boolean updateRecord(RID rid, Tuple newRecord) throws ChainException
 	{
+		//System.out.println(newRecord);
 		PageId pageid =  rid.pageno;
 		if(pageid== null ) {
 			System.out.println("Warning: pageid is null");
@@ -171,7 +172,13 @@ public class HeapFile {
 			return false;
 		}
 		capacInfo.removePageId(hfpage.getFreeSpace(), pageid);
-		hfpage.updateRecord(rid,newRecord); // delete the rid in hfpage
+		try{
+			hfpage.updateRecord(rid,newRecord); // delete the rid in hfpage
+		}
+		catch(Exception e)
+		{
+			throw new InvalidUpdateException();
+		}
 		capacInfo.insert((short)(hfpage.getFreeSpace()),pageid);
 
 		global.Minibase.BufferManager.unpinPage(pageid, true); // modified, so unpin it with dirty bit
