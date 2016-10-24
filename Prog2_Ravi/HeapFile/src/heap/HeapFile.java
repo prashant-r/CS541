@@ -57,28 +57,31 @@ public class HeapFile {
 			{
 				Page page = new Page();
 				global.Minibase.BufferManager.pinPage(firstpgId, page, false);  // if found; pin it ; accessing
-
-
 				current =new HFPage(page);  //// create a new HFPage with the page created before, make it as current Page
 				current.setData(page.getData());
-
-
 				//recordNumber += amount(current);  //  increment the record number depending on the current page
 				global.Minibase.BufferManager.unpinPage(firstpgId, false);  // unpin it, done accessing
 				PageId currentPageId = current.getCurPage();
-
-				while (currentPageId.pid != -1 && currentPageId.pid!= 0)
+				int initpid = firstpgId.pid;
+				while (currentPageId.pid!= -1)
 				{
 					HFPage temp1 = new HFPage();
-
 					global.Minibase.BufferManager.pinPage(currentPageId, temp1,
 							false);
 					current = temp1;
+					if(currentPageId.pid != initpid)
+						capacInfo.reconstructMap(temp1);
 					global.Minibase.BufferManager.unpinPage(currentPageId, false);
+					
 					firstpgId.pid = firstpgId.pid+1;
 					currentPageId = current.getNextPage();
 				}
-
+				
+				System.out.println(capacInfo);
+				while(true)
+				{
+					
+				}
 			}
 		}
 	}

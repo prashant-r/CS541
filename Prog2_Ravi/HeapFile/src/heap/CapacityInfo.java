@@ -12,36 +12,33 @@ import global.PageId;
 
 public class CapacityInfo
 {
-	 
 	private class PageIdComparator implements Comparator<PageId> {
 		@Override
 		public int compare(PageId tv1, PageId tv2) {
 			return (new Integer(tv1.pid).compareTo(tv2.pid));
 		}
 	}
-	
-	
-	private TreeMap<Short, TreeSet<PageId>> info;
+	private TreeMap<Short, TreeSet<PageId>> capacityInfo;
 	private HashSet<PageId> membershipInfo;
 	
 	public CapacityInfo()
 	{
-		info =  new TreeMap<Short, TreeSet<PageId>>();
+		capacityInfo =  new TreeMap<Short, TreeSet<PageId>>();
 		membershipInfo = new HashSet<PageId>();
 	}
 	
 	public void insert(Short x, PageId y)
 	{
 		//System.out.println("Insert Request is " + x + " " + y.pid);
-		if(info.containsKey(x))
+		if(capacityInfo.containsKey(x))
 		{
-			info.get(x).add(y);
+			capacityInfo.get(x).add(y);
 		}
 		else
 		{
 			TreeSet<PageId> pageIds = new TreeSet<PageId>(new PageIdComparator());
 			pageIds.add(y);
-			info.put(x, pageIds);			
+			capacityInfo.put(x, pageIds);			
 		}
 		
 		//System.out.println("INFO is : " + info);
@@ -52,7 +49,7 @@ public class CapacityInfo
 	public boolean containsKey(Short x)
 	{
 		//System.out.println("containsKey Request is " + x );
-		return info.containsKey(x);
+		return capacityInfo.containsKey(x);
 	}
 	
 	public boolean containsPageId(PageId pageid)
@@ -66,8 +63,8 @@ public class CapacityInfo
 		//System.out.println("ContainsKeyAndPageId Request is " + x + " " + pageId);
 		if(containsKey(x))
 		{
-			if(info.get(x) == null || info.get(x).isEmpty()){ System.out.println("CapacityInfo.java:63 - -Warning: non existent value for key");return false;}
-			if(info.get(x).contains(pageId))
+			if(capacityInfo.get(x) == null || capacityInfo.get(x).isEmpty()){ System.out.println("CapacityInfo.java:63 - -Warning: non existent value for key");return false;}
+			if(capacityInfo.get(x).contains(pageId))
 			{
 				return true;
 			}
@@ -79,8 +76,8 @@ public class CapacityInfo
 	{
 		//System.out.println("Remove key Request is " + x);
 		if(!containsKey(x)) System.out.println("CapacityInfo.java:75 - -Warning: trying to remove non existant key");
-		if(info.get(x)!= null && info.get(x).size() > 0) System.out.println("CapacityInfo.java:64 - - Trying to delete non empty key");
-		info.remove(x);
+		if(capacityInfo.get(x)!= null && capacityInfo.get(x).size() > 0) System.out.println("CapacityInfo.java:64 - - Trying to delete non empty key");
+		capacityInfo.remove(x);
 		
 	}
 	
@@ -88,8 +85,8 @@ public class CapacityInfo
 	{
 		//System.out.println("RemovePageId Request is size " + x + " page id " +pageid );
 		if(!containsKey(x)) System.out.println("CapacityInfo.java:84 - -Warning: trying to remove non existant key");
-		if(info.get(x) == null || info.get(x).isEmpty()){ System.out.println("CapacityInfo.java:85 - -Warning: non existent value for key") ; removeKey(x); return;}
-		info.get(x).remove(pageid);
+		if(capacityInfo.get(x) == null || capacityInfo.get(x).isEmpty()){ System.out.println("CapacityInfo.java:85 - -Warning: non existent value for key") ; removeKey(x); return;}
+		capacityInfo.get(x).remove(pageid);
 		membershipInfo.remove(pageid);
 	}
 	
@@ -97,7 +94,7 @@ public class CapacityInfo
 	{
 		//System.out.println("getPageWithAvail  Request is " + cap);
 		// Note : can also use tree map function - ceilingEntry for same task.
-		Entry<Short, TreeSet<PageId>> entry = info.ceilingEntry(cap);
+		Entry<Short, TreeSet<PageId>> entry = capacityInfo.ceilingEntry(cap);
 		if(entry== null) return null;
 		if(entry.getValue() == null) {
 			System.out.println("CapacityInfo.java:96 - -Warning: trying to get null vaulue for existent key -  - Hint: Should remove key instead.");
@@ -124,9 +121,16 @@ public class CapacityInfo
 	}
 	
 	
-	public void reconstructMaps()
+	public void reconstructMap(HFPage hfpage)
 	{
-		
+		System.out.println("Reconstruct Map request with HFPage " + hfpage.getFreeSpace() + " " + hfpage.getCurPage().pid);
+		insert(hfpage.getFreeSpace(),hfpage.getCurPage() );
 	}
+
+	@Override
+	public String toString() {
+		return "CapacityInfo [capacityInfo=" + capacityInfo + ", membershipInfo=" + membershipInfo + "]";
+	}
+	
 	
 }
