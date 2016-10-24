@@ -1,11 +1,18 @@
 package heap;
 
+import java.util.Arrays;
+
 public class Tuple {
 
     int length;
     byte[] data;
     
-    public Tuple(byte [] data , int offset, int length)
+    @Override
+	public String toString() {
+		return "Tuple [length=" + length + ", data=" + Arrays.toString(data) + "]";
+	}
+
+	public Tuple(byte [] data , int offset, int length)
     {
         this.data = data;
         this.length = length;

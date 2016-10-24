@@ -19,7 +19,7 @@ public class HeapFile {
 	
 	private CapacityInfo capacInfo = new CapacityInfo();
 	int recordNumber=0;
-	private PageId firstpgId;
+	public PageId firstpgId;
 	private HFPage current;
 	
 	public HeapFile(String name)
@@ -198,9 +198,24 @@ public class HeapFile {
 		return recordNumber;
 	}
 
-	public Iterator<PageId> iterator()
+	public HashSet<PageId> membership()
 	{
-		return capacInfo.iterator();
+		return capacInfo.membership();
+	}
+	
+	public LinkedHashMap<Integer, HFPage> getAllHFPages()
+	{
+		HashSet<PageId> pageIds = membership();
+		LinkedHashMap<Integer, HFPage> hfpages = new LinkedHashMap<Integer, HFPage>();
+		for (Iterator<PageId> iter = pageIds.iterator(); iter.hasNext(); ) 
+		{
+			Page page = new Page();
+			PageId pageid = iter.next();
+			global.Minibase.BufferManager.pinPage(pageid, page, false); // pin that particular page with pid
+			hfpages.put(pageid.pid, new HFPage(page));
+			global.Minibase.BufferManager.unpinPage(pageid, true); // modified, so unpin it with dirty bit		
+		}
+		return hfpages;	
 	}
 
 	public HeapScan openScan()

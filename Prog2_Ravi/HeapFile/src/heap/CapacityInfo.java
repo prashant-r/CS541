@@ -3,6 +3,7 @@ package heap;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Map.Entry;
@@ -19,12 +20,12 @@ public class CapacityInfo
 		}
 	}
 	private TreeMap<Short, TreeSet<PageId>> capacityInfo;
-	private HashSet<PageId> membershipInfo;
+	private LinkedHashSet<PageId> membershipInfo;
 	
 	public CapacityInfo()
 	{
 		capacityInfo =  new TreeMap<Short, TreeSet<PageId>>();
-		membershipInfo = new HashSet<PageId>();
+		membershipInfo = new LinkedHashSet<PageId>();
 	}
 	
 	public void insert(Short x, PageId y)
@@ -108,10 +109,10 @@ public class CapacityInfo
 		return toRemove;
 	}
 	
-	public Iterator<PageId> iterator()
+	public LinkedHashSet<PageId> membership()
 	{
 		//System.out.println("Iterator Request is " + membershipInfo + " " + info);
-		return membershipInfo.iterator();
+		return membershipInfo;
 	}
 	
 	public boolean isEmpty()
