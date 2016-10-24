@@ -32,6 +32,7 @@ public class CapacityInfo
 	
 	public void insert(Short x, PageId y)
 	{
+		//System.out.println("Insert Request is " + x + " " + y.pid);
 		if(info.containsKey(x))
 		{
 			info.get(x).add(y);
@@ -42,7 +43,7 @@ public class CapacityInfo
 			pageIds.add(y);
 			info.put(x, pageIds);			
 		}
-		//System.out.println("Insert Request is " + x + " " + y.pid);
+		
 		//System.out.println("INFO is : " + info);
 		membershipInfo.add(y);
 		//System.out.println("MEMBERSHIP INFO is :" + membershipInfo );
@@ -50,16 +51,19 @@ public class CapacityInfo
 	
 	public boolean containsKey(Short x)
 	{
+		//System.out.println("containsKey Request is " + x );
 		return info.containsKey(x);
 	}
 	
 	public boolean containsPageId(PageId pageid)
 	{
+		//System.out.println("containsPageId Request is " + pageid);
 		return membershipInfo.contains(pageid);
 	}
 	
 	public boolean containsKeyAndPageId(Short x, PageId pageId)
 	{
+		//System.out.println("ContainsKeyAndPageId Request is " + x + " " + pageId);
 		if(containsKey(x))
 		{
 			if(info.get(x) == null || info.get(x).isEmpty()){ System.out.println("CapacityInfo.java:63 - -Warning: non existent value for key");return false;}
@@ -73,7 +77,7 @@ public class CapacityInfo
 	
 	public void removeKey(Short x)
 	{
-		System.out.println("Remove key " + x);
+		//System.out.println("Remove key Request is " + x);
 		if(!containsKey(x)) System.out.println("CapacityInfo.java:75 - -Warning: trying to remove non existant key");
 		if(info.get(x)!= null && info.get(x).size() > 0) System.out.println("CapacityInfo.java:64 - - Trying to delete non empty key");
 		info.remove(x);
@@ -82,7 +86,7 @@ public class CapacityInfo
 	
 	public void removePageId(Short x, PageId pageid)
 	{
-		System.out.println("Remove size " + x + " page id " +pageid );
+		//System.out.println("RemovePageId Request is size " + x + " page id " +pageid );
 		if(!containsKey(x)) System.out.println("CapacityInfo.java:84 - -Warning: trying to remove non existant key");
 		if(info.get(x) == null || info.get(x).isEmpty()){ System.out.println("CapacityInfo.java:85 - -Warning: non existent value for key") ; removeKey(x); return;}
 		info.get(x).remove(pageid);
@@ -91,6 +95,7 @@ public class CapacityInfo
 	
 	public PageId getPageWithAvailCapacity(Short cap) throws ChainException
 	{
+		//System.out.println("getPageWithAvail  Request is " + cap);
 		// Note : can also use tree map function - ceilingEntry for same task.
 		Entry<Short, TreeSet<PageId>> entry = info.ceilingEntry(cap);
 		if(entry== null) return null;
@@ -108,12 +113,20 @@ public class CapacityInfo
 	
 	public Iterator<PageId> iterator()
 	{
+		//System.out.println("Iterator Request is " + membershipInfo + " " + info);
 		return membershipInfo.iterator();
 	}
 	
 	public boolean isEmpty()
 	{
+		//System.out.println("isEmpty Request is ");
 		return membershipInfo.isEmpty();
+	}
+	
+	
+	public void reconstructMaps()
+	{
+		
 	}
 	
 }

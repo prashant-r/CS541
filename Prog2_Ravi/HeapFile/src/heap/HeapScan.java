@@ -23,11 +23,14 @@ public class HeapScan {
         this.hf = hf;
         it = hf.iterator();
         Page page=new Page();
-        currentPageId = it.next();
-        Minibase.BufferManager.pinPage(currentPageId, page, false);
+        if(it.hasNext())
+        {
+        	currentPageId = it.next();
+        	Minibase.BufferManager.pinPage(currentPageId, page, false);
+            currentPage = new HFPage(page);
+            currentRid = currentPage.firstRecord();
 
-        currentPage = new HFPage(page);
-        currentRid = currentPage.firstRecord();
+        }
     }
 
     protected void finalize() throws Throwable

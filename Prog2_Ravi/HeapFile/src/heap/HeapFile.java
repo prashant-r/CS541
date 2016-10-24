@@ -65,7 +65,7 @@ public class HeapFile {
 
 				//recordNumber += amount(current);  //  increment the record number depending on the current page
 				global.Minibase.BufferManager.unpinPage(firstpgId, false);  // unpin it, done accessing
-				PageId currentPageId = current.getNextPage();
+				PageId currentPageId = current.getCurPage();
 
 				while (currentPageId.pid != -1 && currentPageId.pid!= 0)
 				{
@@ -73,13 +73,10 @@ public class HeapFile {
 
 					global.Minibase.BufferManager.pinPage(currentPageId, temp1,
 							false);
-					
-					//System.out.println("Here" + currentPageId.pid);
-					//recordNumber += amount(temp);
+					current = temp1;
 					global.Minibase.BufferManager.unpinPage(currentPageId, false);
 					firstpgId.pid = firstpgId.pid+1;
 					currentPageId = current.getNextPage();
-					break;
 				}
 
 			}
@@ -112,6 +109,9 @@ public class HeapFile {
 			hfPage.setData(page.getData());
 			rid = hfPage.insertRecord(record);
 			capacInfo.insert((Short)hfPage.getFreeSpace(),pageId);
+			
+			
+			//System.out.println("Setting current page id " + current.getCurPage().pid + " Next page " + pageId.pid);
 			current.setNextPage(pageId);
 			hfPage.setPrevPage(current.getCurPage());
 			current= hfPage;
@@ -124,11 +124,7 @@ public class HeapFile {
 			hfPage.setCurPage(pageId);
 			hfPage.setData(page.getData());
 			rid = hfPage.insertRecord(record);	
-			capacInfo.insert(hfPage.getFreeSpace(), pageId);
-			current.setNextPage(pageId);
-			hfPage.setPrevPage(current.getCurPage());
-			current = hfPage;
-			
+			capacInfo.insert(hfPage.getFreeSpace(), pageId);			
 		}
 		recordNumber++; // keep track of the record number
 		Minibase.BufferManager.unpinPage(pageId,true);
