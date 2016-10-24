@@ -42,8 +42,10 @@ public class CapacityInfo
 			pageIds.add(y);
 			info.put(x, pageIds);			
 		}
-		System.out.println(info);
+		//System.out.println("Insert Request is " + x + " " + y.pid);
+		//System.out.println("INFO is : " + info);
 		membershipInfo.add(y);
+		//System.out.println("MEMBERSHIP INFO is :" + membershipInfo );
 	}
 	
 	public boolean containsKey(Short x)

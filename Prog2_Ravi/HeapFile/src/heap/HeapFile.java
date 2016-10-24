@@ -79,6 +79,7 @@ public class HeapFile {
 					global.Minibase.BufferManager.unpinPage(currentPageId, false);
 					firstpgId.pid = firstpgId.pid+1;
 					currentPageId = current.getNextPage();
+					break;
 				}
 
 			}
@@ -122,8 +123,6 @@ public class HeapFile {
 			hfPage = new HFPage(page);	
 			hfPage.setCurPage(pageId);
 			hfPage.setData(page.getData());
-			Short freespace = hfPage.getFreeSpace();
-			capacInfo.removePageId(freespace, pageId);
 			rid = hfPage.insertRecord(record);	
 			capacInfo.insert(hfPage.getFreeSpace(), pageId);
 			current.setNextPage(pageId);
