@@ -80,7 +80,7 @@ public class HeapFile {
 					currentPageId = current.getNextPage();
 				}
 				
-				System.out.println(capacInfo);
+				//System.out.println(capacInfo);
 			}
 		}
 	}
@@ -158,13 +158,18 @@ public class HeapFile {
 	public boolean updateRecord(RID rid, Tuple newRecord) throws ChainException
 	{
 		PageId pageid =  rid.pageno;
-		if(pageid== null ) return false;
-		if(rid.getLength() != newRecord.getLength()) return  false;
+		if(pageid== null ) {
+			System.out.println("Warning: pageid is null");
+			return false;
+		}
 
 		Page page = new Page();
 		global.Minibase.BufferManager.pinPage(pageid, page, false); // pin that particular page with pid
 		HFPage hfpage = new HFPage(page);
-		if(!capacInfo.containsKeyAndPageId(hfpage.getFreeSpace(), pageid)) return false;
+		if(!capacInfo.containsKeyAndPageId(hfpage.getFreeSpace(), pageid)){
+			System.out.println("Warning: contains key and pageId failed.");
+			return false;
+		}
 		capacInfo.removePageId(hfpage.getFreeSpace(), pageid);
 		hfpage.updateRecord(rid,newRecord); // delete the rid in hfpage
 		capacInfo.insert((short)(hfpage.getFreeSpace()),pageid);

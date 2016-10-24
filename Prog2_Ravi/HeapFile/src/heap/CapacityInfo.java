@@ -113,7 +113,7 @@ public class CapacityInfo
 	
 	public PageId getPageWithAvailCapacity(Short cap) throws ChainException
 	{
-		System.out.println("getPageWithAvail  Request is " + cap);
+		//System.out.println("getPageWithAvail  Request is " + cap);
 		// Note : can also use tree map function - ceilingEntry for same task.
 		Entry<Short, TreeSet<PageId>> entry = capacityInfo.ceilingEntry(cap);
 		if(entry== null) return null;
