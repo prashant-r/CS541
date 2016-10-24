@@ -237,7 +237,7 @@ class HFDriver extends TestDriver implements GlobalConst
 						System.err.println ("rec.name: " + rec.name
 								+ " should be " + name + "\n");
 						status = FAIL;
-						break;
+						//break;
 					}
 				}	
 				++i;
@@ -799,9 +799,9 @@ class HFDriver extends TestDriver implements GlobalConst
 		boolean _passAll = OK;
 
 		if (!test1()) { _passAll = FAIL; }
-		if (!test2()) { _passAll = FAIL; }
-		if (!test3()) { _passAll = FAIL; }
-		if (!test4()) { _passAll = FAIL; }
+//		if (!test2()) { _passAll = FAIL; }
+//		if (!test3()) { _passAll = FAIL; }
+//		if (!test4()) { _passAll = FAIL; }
 		//if (!test5()) { _passAll = FAIL; }		
 		
 		// Test the capacity data structure

@@ -1,60 +1,104 @@
 package heap;
 
 import chainexception.ChainException;
-import global.Minibase;
-import global.Page;
 import global.PageId;
 import global.RID;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
+
 
 public class HeapScan {
+	
+	private PageId firstPageId;
+	private Integer currentPid;
+	private RID currentRid;
+	private Iterator<Integer> it;
+	private LinkedHashMap<Integer, HFPage> hfPagesMap;
 
-    private HeapFile hf;
-    private PageId currentPageId;
-    private HFPage currentPage;
-    private RID currentRid;
-    private LinkedHashMap<Integer, HFPage> hfpagesMap;
+	protected HeapScan(HeapFile hf) {
+		hfPagesMap = hf.getAllHFPages();
+		//System.out.println(hfPagesMap);
+		HFPage firstPage = new HFPage();
+		firstPageId = hf.firstpgId;
+		global.Minibase.BufferManager.pinPage(firstPageId, firstPage, false); // pin that particular page with pid
+		it = pageIdIterator();
+		currentPid = it.next();
+		//System.out.println(currentPid);
+		setFirstRid();
+	}
+	
+	private void setFirstRid()
+	{
+		if(currentPid == null)
+		{		
+			currentRid = null;
+			return;
+		}
+		RID tempRID = hfPagesMap.get(currentPid).firstRecord();
+		if(tempRID == null)
+		{
+			currentPid = nextPid();
+			setFirstRid();
+		}
+		else
+		{
+			currentRid = new RID();
+			currentRid.copyRID(tempRID);
+		}
+	}
+	
+	
+	private Iterator<Integer> pageIdIterator()
+	{
+		return hfPagesMap.keySet().iterator();
+	}
 
-    protected HeapScan(HeapFile hf)
-    {
-        this.hf = hf;
-        currentPageId = hf.firstpgId;
-        hfpagesMap = hf.getAllHFPages();   
-    }
+	protected void finalize() throws Throwable {
+		currentPid = null;
+		currentRid = null;
+	}
 
-    protected void finalize() throws Throwable
-    {
-    	currentPageId = null;
-        currentPage = null;
-        currentRid=null;
-    }
+	public void close() throws ChainException {
 
-    public void close() throws ChainException
-    {
-
-        try {
+		try {
 			finalize();
 		} catch (Throwable e) {
 			throw new ChainException(null, e.getMessage());
 		}
-    }
+	}
 
-    public boolean hasNext()
-    {
-    	return false;
-    }
+	public boolean hasNext() {
+		return currentRid != null;
+	}
+		
+	private Integer nextPid()
+	{
+		if(it.hasNext()) return it.next();
+		return null;
+	}
 
-    public Tuple getNext(RID rid)
-    {   
-    	//Minibase.BufferManager.pinPage(currentPageId, page, false);
-        //currentPage = new HFPage(page);
-    	return null;
-    }
-
+	public Tuple getNext(RID rid) {
+		
+		if(currentRid == null) {
+			global.Minibase.BufferManager.unpinPage(firstPageId, true); // modified, so unpin it with dirty bit
+			return null;
+		}
+		HFPage currentPage = hfPagesMap.get(currentPid);
+		rid.copyRID(currentRid);
+		Tuple toReturn = new Tuple(currentPage.selectRecord(currentRid));
+		//System.out.println(toReturn);
+		RID nextRID = currentPage.nextRecord(currentRid);
+		if(nextRID == null)
+		{
+			currentPid = nextPid();
+			setFirstRid();
+		}
+		else
+		{
+			currentRid = new RID();
+			currentRid.copyRID(nextRID);
+		}
+		return toReturn;
+	}
 }

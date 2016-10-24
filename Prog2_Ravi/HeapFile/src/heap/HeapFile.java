@@ -63,7 +63,7 @@ public class HeapFile {
 				current =new HFPage(page);  //// create a new HFPage with the page created before, make it as current Page
 				current.setData(page.getData());
 				//recordNumber += amount(current);  //  increment the record number depending on the current page
-				global.Minibase.BufferManager.unpinPage(firstpgId, false);  // unpin it, done accessing
+				global.Minibase.BufferManager.unpinPage(firstpgId, true);  // unpin it, done accessing
 				PageId currentPageId = current.getCurPage();
 				int initpid = firstpgId.pid;
 				while (currentPageId.pid!= -1)
@@ -197,15 +197,10 @@ public class HeapFile {
 	{
 		return recordNumber;
 	}
-
-	public HashSet<PageId> membership()
-	{
-		return capacInfo.membership();
-	}
 	
 	public LinkedHashMap<Integer, HFPage> getAllHFPages()
 	{
-		HashSet<PageId> pageIds = membership();
+		LinkedHashSet<PageId> pageIds = capacInfo.membership();
 		LinkedHashMap<Integer, HFPage> hfpages = new LinkedHashMap<Integer, HFPage>();
 		for (Iterator<PageId> iter = pageIds.iterator(); iter.hasNext(); ) 
 		{
