@@ -16,23 +16,14 @@ public class HeapScan {
     private HFPage currentPage;
 
     private RID currentRid;
-    private Iterator<LinkedList<PageId>> it;
-    private LinkedList<PageId> currentPageList;
-    Iterator<PageId> listiterator ;
+    Iterator<PageId> it ;
 
     protected HeapScan(HeapFile hf)
     {
         this.hf = hf;
         it = hf.iterator();
-        currentPageList = it!=null ? it.next() : null;
-
-        currentPageId= (currentPageList==null) || (currentPageList.size()==0) ? null : currentPageList.getFirst();
-
-        if(currentPageId==null) return;
-
-        listiterator = currentPageList.iterator();
-
         Page page=new Page();
+        currentPageId = it.next();
         Minibase.BufferManager.pinPage(currentPageId, page, false);
 
         currentPage = new HFPage(page);
@@ -71,38 +62,18 @@ public class HeapScan {
     {
         if(!hasNext() && currentRid==null && currentPage!=null)
             Minibase.BufferManager.unpinPage(currentPage.getCurPage(), false);
-
         if (currentRid == null)
         {
-            while (hasNext())
+            while (it.hasNext())
             {
-                   if(currentPageList.size()!=0)
-                   {
-                       Minibase.BufferManager.unpinPage(currentPage.getCurPage(), false);
-                       currentPageList.poll();
-
-                   }
-                   else
-                       currentPageList = it.next() ;
-
-                    currentPageId= (currentPageList==null) || (currentPageList.size()==0) ? null : currentPageList.getFirst();
-
-                   if(currentPageId==null)
-                   {
-                      continue;
-                   }
-
                    Page page=new Page();
+                   currentPageId = it.next();
                    Minibase.BufferManager.pinPage(currentPageId, page, false);
-
                    currentPage = new HFPage(page);
                    currentRid = currentPage.firstRecord();
-                   break;
-
             }
         }
-
-        if(currentRid!=null)
+        else
         {
             rid.copyRID(currentRid);
             currentRid = currentPage.nextRecord(currentRid);

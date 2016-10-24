@@ -1,7 +1,6 @@
 package heap;
 
 import java.util.*;
-import java.util.Map.Entry;
 
 import global.GlobalConst;
 import global.Minibase;
@@ -13,10 +12,7 @@ import global.RID;
 import chainexception.ChainException;
 
 public class HeapFile {
-	
-	
-	
-	
+
 	//---------------------------------------------------------------------------------------------------------------	
 		// Object declarations and access methods
 	//---------------------------------------------------------------------------------------------------------------	
@@ -25,76 +21,6 @@ public class HeapFile {
 	int recordNumber=0;
 	private PageId firstpgId;
 	private HFPage current;
-	
-	private class CapacityInfo
-	{
-		private TreeMap<Short, TreeSet<PageId>> info;
-		private HashSet<PageId> membershipInfo;
-		
-		public CapacityInfo()
-		{
-			info =  new TreeMap<Short, TreeSet<PageId>>();
-		}
-		
-		public void insert(Short x, PageId y)
-		{
-			if(info.containsKey(x))
-			{
-				info.get(x).add(y);
-			}
-			else
-			{
-				TreeSet<PageId> pageIds = new TreeSet<PageId>();
-				pageIds.add(y);
-				info.put(x, pageIds);			
-			}
-		}
-		
-		public boolean containsKey(Short x)
-		{
-			return info.containsKey(x);
-		}
-		
-		public boolean containsKeyAndPageId(Short x, PageId pageId)
-		{
-			if(containsKey(x))
-			{
-				if(info.get(x) == null || info.get(x).isEmpty()){ System.out.println("HeapFile.java:61 - -Warning: non existent value for key");return false;}
-				if(info.get(x).contains(pageId))
-				{
-					return true;
-				}
-			}
-			return false;
-		}
-		
-		public void removeKey(Short x)
-		{
-			if(!containsKey(x)) System.out.println("HeapFile.java:64 - -Warning: trying to remove non existant key");
-			info.remove(x);
-		}
-		
-		public void removePageId(Short x, PageId pageid)
-		{
-			if(!containsKey(x)) System.out.println("HeapFile.java:75 - -Warning: trying to remove non existant key");
-			if(info.get(x) == null || info.get(x).isEmpty()){ System.out.println("HeapFile.java:79 - -Warning: non existent value for key");return false;}
-			info.get(x).remove(pageid);
-		}
-		
-		public PageId getPageWithAvailCapacity(Short cap) throws ChainException
-		{
-			// Note : can also use tree map function - ceilingEntry for same task.
-			Entry<Short, TreeSet<PageId>> entry = info.ceilingEntry(cap);
-			if(entry== null) return null;
-			if(entry.getValue() == null) {
-				System.out.println("HeapFile.java:92 - -Warning: trying to get null vaulue for existent key -  - Hint: Should remove key instead.");
-				return null;
-			}
-			if(entry.getValue().isEmpty()) throw new ChainException(null ,"HeapFile.java:95 - -Warning:Poll attempted on empty LinkedList. "); 
-			return entry.getValue().pollFirst();
-		}
-		
-	}
 	
 	public HeapFile(String name)
 	{
@@ -142,26 +68,14 @@ public class HeapFile {
 				PageId currentPageId = current.getNextPage();
 				LinkedList<PageId> pageIdList = new LinkedList<PageId>();
 
-				while (currentPageId.pid != -1)
+				while (currentPageId.pid != -1 && currentPageId.pid!= 0)
 				{
 					HFPage temp1 = new HFPage();
 
 					global.Minibase.BufferManager.pinPage(currentPageId, temp1,
 							false);
 					
-					if(capInfo.containsKey(current.getFreeSpace()))
-					{
-						LinkedList<PageId> newpageIdList = capInfo.get(current.getFreeSpace());
-						newpageIdList.add(currentPageId);
-						capInfo.replace(current.getFreeSpace(), newpageIdList);
-					}
-					else
-					{
-						pageIdList = new LinkedList<PageId>();
-						pageIdList.add(currentPageId);
-						capInfo.put(current.getFreeSpace(),pageIdList);
-					}
-
+					System.out.println(currentPageId.pid);
 					//recordNumber += amount(temp);
 					global.Minibase.BufferManager.unpinPage(currentPageId, false);
 					firstpgId.pid = firstpgId.pid+1;
@@ -230,7 +144,7 @@ public class HeapFile {
 		global.Minibase.BufferManager.pinPage(pageid, page, false); // pin that particular page with pid
 		HFPage hfpage = new HFPage(page);
 		
-		if(!capacInfo.containsKeyAndPageId(hfpage.getFreeSpace(), pageid)) return null;
+		if(!capacInfo.containsPageId(pageid)) return null;
 		
 		Tuple tuple= new Tuple();
 		tuple.setData(hfpage.selectRecord(rid));
@@ -248,9 +162,9 @@ public class HeapFile {
 		global.Minibase.BufferManager.pinPage(pageid, page, false); // pin that particular page with pid
 		HFPage hfpage = new HFPage(page);
 		if(!capacInfo.containsKeyAndPageId(hfpage.getFreeSpace(), pageid)) return false;
-		capacInfo.remove(hfpage.getFreeSpace(), pageid);
+		capacInfo.removePageId(hfpage.getFreeSpace(), pageid);
 		hfpage.updateRecord(rid,newRecord); // delete the rid in hfpage
-		capacInfo.insert((short)(hfpage.getFreeSpace()),linkedList);
+		capacInfo.insert((short)(hfpage.getFreeSpace()),pageid);
 
 		global.Minibase.BufferManager.unpinPage(pageid, true); // modified, so unpin it with dirty bit
 		return true;
@@ -265,14 +179,12 @@ public class HeapFile {
 		global.Minibase.BufferManager.pinPage(pageid, page, false); // pin that particular page with pid
 		HFPage hfpage = new HFPage(page);
 
-		LinkedList<PageId> linkedList=  capInfo.get(hfpage.getFreeSpace());
-
-		if(linkedList.isEmpty() || !linkedList.contains(pageid)) return false;
-
-		capInfo.remove(hfpage.getFreeSpace());
+		if(!capacInfo.containsPageId(pageid)) return false;
+	
+		capacInfo.removePageId(hfpage.getFreeSpace(), pageid);
 
 		hfpage.deleteRecord(rid); // delete the rid in hfpage
-		capInfo.put((short)(hfpage.getFreeSpace()- rid.getLength()),linkedList);
+		capacInfo.insert((short)(hfpage.getFreeSpace()- rid.getLength()),pageid);
 
 		global.Minibase.BufferManager.unpinPage(pageid, true); // modified, so unpin it with dirty bit
 		recordNumber--; // record number reduced
@@ -283,13 +195,9 @@ public class HeapFile {
 		return recordNumber;
 	}
 
-	public Iterator<LinkedList<PageId>> iterator()
+	public Iterator<PageId> iterator()
 	{
-
-		if(capInfo.isEmpty()) return  null;
-
-		return capInfo.values().iterator();
-
+		return capacInfo.iterator();
 	}
 
 	public HeapScan openScan()
