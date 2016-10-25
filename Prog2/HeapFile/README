@@ -1,0 +1,29 @@
+Team Members:
+
+a) Henry Jones Jebasingh Elilarasu (hjebasin@purdue.edu)
+
+b) Prashant Ravi (ravi18@purdue.edu)
+
+
+Feature (you'd like to know) : 
+
+Ω(log m) + O(log n) where m is the maximum available size for a page which is bound, hence can be considered
+constant so run time complexity of insert/delete and update are big-om(log n) + C ~ O(log n). We say this because 
+looking into a treemap with keys being "available size" and value being the pages that 
+have this "available size" in them. Looking up based on available size takes one lookup in the
+treemap which is average case O(1) but in case of worst case scenario of collisions is O(log m) , m being 
+the maximum available size in the page.
+
+Next, to look up the pageId in the value of treemap can take O(log n) guranteed by the red-black tree
+backed tree data structure, which is balanced.
+
+
+Other operations are O(1) since they involve lookup if Page is a memeber of this file of records.
+Contains operation in a LinkedHashMap is constant. Also we want to maintain the order of Page insertions
+so as to enable the HeapScan class' iterative ability.
+
+
+Contributions (Who did what) :
+
+Henry - Tuple.java, HeapFile.java
+Prashant - CapacityInfo.java, HeapScan.java, HeapFile.java (< 1/3)

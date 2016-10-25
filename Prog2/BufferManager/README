@@ -1,0 +1,16 @@
+Team Members:
+
+a) Henry Jones Jebasingh Elilarasu (hjebasin@purdue.edu)
+
+b) Prashant Ravi (ravi18@purdue.edu)
+
+
+Feature (you'd like to know) : 
+
+Buffer Manager with O(n) LRFU Page replacement policy.
+
+
+Contributions (Who did what) :
+
+Henry -  Exception Handling.
+Prashant - BufMgr.java and its associated objects.
