@@ -7,9 +7,7 @@ import global.Page;
 import global.PageId;
 
 import java.io.IOException;
-import java.util.Random;
 
-import bufmgr.MyHashTable;
 import chainexception.ChainException;
 
 //Note that in JAVA, methods can't be overridden to be more private.
@@ -116,16 +114,9 @@ class BMDriver extends TestDriver implements GlobalConst {
 		if (!test1()) { _passAll = FAIL; }    
 		if (!test2()) { _passAll = FAIL; }
 		if (!test3()) { _passAll = FAIL; }
-//		if (!test4()) { _passAll = FAIL; }
-//		if (!test5()) { _passAll = FAIL; }
-//		if (!test6()) { _passAll = FAIL; }
-//		
-//		// For hash table
-//		if (!testPUT_GET()) { _passAll = FAIL; }
-//		if (!testPUT_CONTAINS()) { _passAll = FAIL; }
-//		if (!testPUT_REMOVE()) { _passAll = FAIL; }
-		
-		
+		if (!test4()) { _passAll = FAIL; }
+		if (!test5()) { _passAll = FAIL; }
+		if (!test6()) { _passAll = FAIL; }
 
 		return _passAll;
 	}
@@ -201,7 +192,6 @@ class BMDriver extends TestDriver implements GlobalConst {
 
 				try {
 					Convert.setIntValue (data, 0, pg.getpage());
-					//Minibase.BufferManager.myTester();
 				}
 				catch (IOException e) {
 					System.err.print ("*** Convert value failed\n");
@@ -240,10 +230,11 @@ class BMDriver extends TestDriver implements GlobalConst {
 			}
 
 			if ( status == OK ) {
+
 				int data = 0;
+
 				try {
 					data = Convert.getIntValue (0, pg.getpage());
-					
 				}
 				catch (IOException e) {
 					System.err.print ("*** Convert value failed \n");
@@ -254,7 +245,7 @@ class BMDriver extends TestDriver implements GlobalConst {
 					if (data != (pid.pid) + 99999) {
 						status = FAIL;
 						System.err.print ("*** Read wrong data back from page " 
-								+ pid.pid  + "\n ");
+								+ pid.pid + "\n");
 					}
 				}
 
@@ -628,83 +619,6 @@ class BMDriver extends TestDriver implements GlobalConst {
 
 		return true;
 	}
-	
-	
-	private int MX_SZ;
-	private MyHashTable hashMap;
-	public void setUp() {
-
-		hashMap = new MyHashTable();
-		MX_SZ = 1000;
-	}
-	
-	public int randomNumGenerator()
-	{
-		Random random = new Random();
-		int ran = random.nextInt(MX_SZ*MX_SZ);
-		while(hashMap.containsKey(ran))
-		{
-			ran = random.nextInt(MX_SZ*MX_SZ); 
-		}
-		return ran;
-	}
-	
-	
-	protected boolean testPUT_GET()
-	{
-		setUp();
-		int dummy_val = 0;
-		boolean result = true;
-		for(int x =0 ; x < MX_SZ ; x++)
-		{
-			int newran = randomNumGenerator();
-			hashMap.put(newran, dummy_val);
-			result = result && (hashMap.get(newran).equals(dummy_val));
-			dummy_val = newran;
-		}
-		if(result == false)
-			System.out.println("****** testPUT_GET failed.");
-		return result;
-	}
-	
-	
-	public boolean testPUT_CONTAINS() {
-		setUp();
-		int dummy_val = 0;
-		boolean result = true;
-		for(int x =0 ; x < MX_SZ ; x++)
-		{
-			int newran = randomNumGenerator();
-			hashMap.put(newran, dummy_val);
-			result = result && hashMap.containsKey(newran);
-			dummy_val = newran;
-		}
-		if(result == false)
-			System.out.println("****** testPUT_CONTAINS failed.");
-		return result;
-	}
-	
-	
-	public boolean testPUT_REMOVE()
-	{
-		setUp();
-		int dummy_val = 0;
-		boolean result = true;
-		for(int x =0 ; x < MX_SZ ; x++)
-		{
-			int newran = randomNumGenerator();
-			hashMap.put(newran, dummy_val);
-			result = result && hashMap.containsKey(newran);
-			result = result && hashMap.get(newran).equals(dummy_val);
-			hashMap.remove(newran);
-			result = result && !hashMap.containsKey(newran);
-			dummy_val = newran;
-		}
-		if(result == false)
-			System.out.println("****** testPUT_REMOVE failed.");
-		return result;
-	}
-
 
 	/**
 	 * overrides the testName function in TestDriver
@@ -733,4 +647,3 @@ public class BMTest {
 		Runtime.getRuntime().exit(0);
 	}
 }
-

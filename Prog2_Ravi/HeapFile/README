@@ -26,4 +26,4 @@ so as to enable the HeapScan class' iterative ability.
 Contributions (Who did what) :
 
 Henry - Tuple.java, HeapFile.java
-Prashant - CapacityInfo.java, HeapScan.javam, HeapFile.java (< 1/3)
+Prashant - CapacityInfo.java, HeapScan.java, HeapFile.java (< 1/3)

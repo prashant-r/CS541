@@ -157,10 +157,8 @@ public class HeapFile {
 
 	public boolean updateRecord(RID rid, Tuple newRecord) throws ChainException
 	{
-		//System.out.println(newRecord);
 		PageId pageid =  rid.pageno;
 		if(pageid== null ) {
-			System.out.println("Warning: pageid is null");
 			return false;
 		}
 
@@ -168,10 +166,8 @@ public class HeapFile {
 		global.Minibase.BufferManager.pinPage(pageid, page, false); // pin that particular page with pid
 		HFPage hfpage = new HFPage(page);
 		if(!capacInfo.containsKeyAndPageId(hfpage.getFreeSpace(), pageid)){
-			System.out.println("Warning: contains key and pageId failed.");
 			return false;
 		}
-		capacInfo.removePageId(hfpage.getFreeSpace(), pageid);
 		try{
 			hfpage.updateRecord(rid,newRecord); // delete the rid in hfpage
 		}
@@ -179,6 +175,7 @@ public class HeapFile {
 		{
 			throw new InvalidUpdateException();
 		}
+		capacInfo.removePageId(hfpage.getFreeSpace(), pageid);
 		capacInfo.insert((short)(hfpage.getFreeSpace()),pageid);
 
 		global.Minibase.BufferManager.unpinPage(pageid, true); // modified, so unpin it with dirty bit
