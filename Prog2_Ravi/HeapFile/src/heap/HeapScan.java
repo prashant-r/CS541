@@ -24,7 +24,6 @@ public class HeapScan {
 		global.Minibase.BufferManager.pinPage(firstPageId, firstPage, false); // pin that particular page with pid
 		it = pageIdIterator();
 		currentPid = it.next();
-		//System.out.println(currentPid);
 		setFirstRid();
 	}
 	
