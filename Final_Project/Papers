@@ -1,14 +1,11 @@
-Prelim Read Complete:
+Paper Read:
 
+http://db.csail.mit.edu/projects/cstore/vldb.pdf
+http://db.csail.mit.edu/projects/cstore/abadiicde2007.pdf
 http://people.inf.ethz.ch/ganja/papers/IDEAS11_QueryOptimization.pdf
 https://cs.uwaterloo.ca/~ssalihog/courses/papers/vldb09-938.pdf
 
 
-To Read:
-
-http://db.csail.mit.edu/projects/cstore/vldb.pdf
-http://db.csail.mit.edu/projects/cstore/abadiicde2007.pdf
-
-
 Articles:
 http://osdir.com/ml/general/2013-01/msg11338.html
+https://blogs.oracle.com/optimizer/entry/maintaining_statistics_on_large_partitioned_tables
