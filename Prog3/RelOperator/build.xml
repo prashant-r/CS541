@@ -9,6 +9,8 @@
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="1.6"/>
     <property name="source" value="1.6"/>
+
+
     <path id="RelationalOperator.classpath">
         <pathelement location="bin"/>
         <pathelement location="lib/bufmgr.jar"/>
@@ -50,5 +52,31 @@
     <target description="compile project with Eclipse compiler" name="build-eclipse-compiler">
         <property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter"/>
         <antcall target="build"/>
+    </target>
+
+    <target name ="run" depends= "run-ROTEST, run-QEPTest">
+    </target>
+
+    <target name="run-ROTEST" depends="build">
+        <!-- Print directly in the console -->
+        <echo message="/////////////////////////////////////////////////////////" />
+        <echo message="-------------Running ROTest------------------------------" />
+        <echo message="/////////////////////////////////////////////////////////" />
+        <!-- Run main class with parameters-->
+        <java classname="tests.ROTest">
+            <classpath refid="RelationalOperator.classpath">
+            </classpath>
+        </java>
+    </target>
+    <target name ="run-QEPTest" depends="build">
+        <!-- Print directly in the console -->
+        <echo message="/////////////////////////////////////////////////////////" />
+        <echo message="-------------Running QEPest------------------------------" />
+        <echo message="/////////////////////////////////////////////////////////" />
+        <!-- Run main class with parameters-->
+        <java classname="tests.QEPTest">
+            <classpath refid="RelationalOperator.classpath">
+            </classpath>
+        </java>
     </target>
 </project>
