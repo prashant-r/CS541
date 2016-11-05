@@ -28,13 +28,14 @@ import index.*;
 
 public class HashJoin extends Iterator {
 
-	int jA;
-	int jB;
-	IndexScan A;
-	IndexScan B;
-	HashTableDup multimap;
+	private int jA;
+	private int jB;
+	private IndexScan A;
+	private IndexScan B;
+	private HashTableDup multimap;
 	private List<Tuple> nextTuples;
 	private int nextPosition;
+	private Tuple currentTuple;
 
 	public HashJoin(Iterator itA, Iterator itB, Integer jA, Integer jB)
 	{
@@ -45,6 +46,9 @@ public class HashJoin extends Iterator {
 		A = getIndexScanFromIteratorAndColumn(itA, jA);
 		B = getIndexScanFromIteratorAndColumn(itB, jB);
 
+		nextPosition = 0;
+		nextTuples = null;
+		currentTuple = null;
 		// create the hash table for the inner table B
 		while (B.hasNext()) {
 			Tuple b = B.getNext();
@@ -99,46 +103,53 @@ public class HashJoin extends Iterator {
 		multimap = null;
 		nextTuples = null;
 		nextPosition = 0;
+		currentTuple = null;
 		jA = 0;
 		jB = 0;
 	}
 	public boolean hasNext() {
+		currentTuple = prefetchTuple();
+		return currentTuple != null;
+	}
+
+	public Tuple prefetchTuple()
+	{
 		if (nextTuples != null) {
-			Tuple result = nextTuples.get(nextPosition++);
+			Tuple prefetched = nextTuples.get(nextPosition++);
 			if (nextPosition == nextTuples.size()) {
 				nextTuples = null;
 				nextPosition = 0;
-				return hasNext();
 			}
+			return prefetched;
 		}
-
-		while (this.A.hasNext()) {
-			Tuple tupleA = this.A.getNext();
-			SearchKey key = new SearchKey(tupleA.getField(this.jA).toString());
-			if (multimap.containsKey(key)) {
-				List<Tuple> tupleMatches = Arrays.asList(multimap.getAll(key));
-				nextTuples = new ArrayList<Tuple>();
-				for (Tuple tupleMatch : tupleMatches) {
-					nextTuples.add(Tuple.join(tupleA, tupleMatch, schema));
+		else
+		{
+			while (this.A.hasNext()) {
+				Tuple tupleA = this.A.getNext();
+				SearchKey key = new SearchKey(tupleA.getField(this.jA).toString());
+				if (multimap.containsKey(key)) {
+					List<Tuple> tupleMatches = Arrays.asList(multimap.getAll(key));
+					nextTuples = new ArrayList<Tuple>();
+					for (Tuple tupleMatch : tupleMatches) {
+						nextTuples.add(Tuple.join(tupleA, tupleMatch, schema));
+					}
+					return prefetchTuple();
 				}
-				nextPosition = 0;
-				return true;
 			}
 		}
-		nextTuples = null;
-		nextPosition = 0;
-		return false;
+		return null;
 	}
 
 	public Tuple getNext() {
-		if(nextTuples == null) throw new IllegalStateException("HashJoin getNext() failed. ");
-		return nextTuples.get(nextPosition);
+		if(currentTuple == null) throw new IllegalStateException("HashJoin getNext() failed. ");
+		return currentTuple;
 	}
 
 	public void restart() {
 		A.restart();
 		nextTuples = null;
 		nextPosition = 0;
+		currentTuple = null;
 	}
 
 	public void explain(int depth) {
