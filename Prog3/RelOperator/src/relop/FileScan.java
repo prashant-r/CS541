@@ -24,6 +24,12 @@ public class FileScan extends Iterator {
       this.lastRid = new RID();
   }
 
+  public void getHeapFile()
+  {
+    return heapFile;
+  }
+
+
   /**
    * Gives a one-line explaination of the iterator, repeats the call on any
    * child iterators, and increases the indent depth along the way.
