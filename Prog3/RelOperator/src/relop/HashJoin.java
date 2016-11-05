@@ -122,19 +122,17 @@ public class HashJoin extends Iterator {
 			}
 			return prefetched;
 		}
-		else
-		{
-			while (this.A.hasNext()) {
-				Tuple tupleA = this.A.getNext();
-				SearchKey key = new SearchKey(tupleA.getField(this.jA).toString());
-				if (multimap.containsKey(key)) {
-					List<Tuple> tupleMatches = Arrays.asList(multimap.getAll(key));
-					nextTuples = new ArrayList<Tuple>();
-					for (Tuple tupleMatch : tupleMatches) {
-						nextTuples.add(Tuple.join(tupleA, tupleMatch, schema));
-					}
-					return prefetchTuple();
+		
+		while (this.A.hasNext()) {
+			Tuple tupleA = this.A.getNext();
+			SearchKey key = new SearchKey(tupleA.getField(this.jA).toString());
+			if (multimap.containsKey(key)) {
+				List<Tuple> tupleMatches = Arrays.asList(multimap.getAll(key));
+				nextTuples = new ArrayList<Tuple>();
+				for (Tuple tupleMatch : tupleMatches) {
+					nextTuples.add(Tuple.join(tupleA, tupleMatch, schema));
 				}
+				return prefetchTuple();
 			}
 		}
 		return null;
