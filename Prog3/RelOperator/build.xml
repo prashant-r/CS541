@@ -58,21 +58,12 @@
     </target>
 
     <target name="run-ROTEST" depends="build">
-        <!-- Print directly in the console -->
-        <echo message="/////////////////////////////////////////////////////////" />
-        <echo message="-------------Running ROTest------------------------------" />
-        <echo message="/////////////////////////////////////////////////////////" />
-        <!-- Run main class with parameters-->
         <java classname="tests.ROTest">
             <classpath refid="RelationalOperator.classpath">
             </classpath>
         </java>
     </target>
     <target name ="run-QEPTest" depends="build">
-        <!-- Print directly in the console -->
-        <echo message="/////////////////////////////////////////////////////////" />
-        <echo message="-------------Running QEPest------------------------------" />
-        <echo message="/////////////////////////////////////////////////////////" />
         <!-- Run main class with parameters-->
         <java classname="tests.QEPTest">
             <classpath refid="RelationalOperator.classpath">

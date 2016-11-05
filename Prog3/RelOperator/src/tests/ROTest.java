@@ -20,7 +20,7 @@ import relop.Tuple;
 /**
  * Test suite for the relop layer.
  */
-class ROTest extends TestDriver {
+public class ROTest extends TestDriver {
 
 	/** The display name of the test suite. */
 	private static final String TEST_NAME = "relational operator tests";
