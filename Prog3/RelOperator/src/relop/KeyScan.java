@@ -22,7 +22,7 @@ public class KeyScan extends Iterator {
     this.hashIndex = index;
     this.searchKey = key;
     this.heapFile = file;
-    if(hashIndex != null) hashScan = hashIndex.openScan(searchKey);
+    this.hashScan = hashIndex.openScan(searchKey);
   }
 
   /**

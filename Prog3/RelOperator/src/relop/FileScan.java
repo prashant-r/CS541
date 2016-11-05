@@ -61,6 +61,7 @@ public class FileScan extends Iterator {
     if (heapScan != null ) heapScan.close();
     lastRid = null;
     heapFile = null;
+    heapScan = null;
   }
 
   /**
