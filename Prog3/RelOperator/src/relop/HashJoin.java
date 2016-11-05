@@ -1,4 +1,10 @@
 package relop;
+
+import java.util.*;
+import global.*;
+import heap.*;
+import index.*;
+
 // Taken from :
 
 // Hash Join algorithm used : 
@@ -24,28 +30,28 @@ public class HashJoin extends Iterator {
 
 	int jA;
 	int jB;
+	IndexScan A;
+	IndexScan B;
+	HashTableDup multimap;
+	private List<Tuple> nextTuples;
+	private int nextPosition;
 
-	IndexScan jAScan;
-	IndexScan jBScan;
-
-	HashTableDup multimap = new HashTableDup();
-
-	Tuple currentTuple;
-
-
-	public HashJoin(Iterator A)
+	public HashJoin(Iterator itA, Iterator itB, Integer jA, Integer jB)
 	{
-
-	}
-
-	public HashJoin(Iterator A, Iterator B, Integer jA, Integer jB)
-	{
-		schema = Schema.join(A.schema, B.schema);
+		schema = Schema.join(itA.schema, itB.schema);
 		this.jA = jA;
 		this.jB = jB;
+		multimap = new HashTableDup();
+		A = getIndexScanFromIteratorAndColumn(itA, jA);
+		B = getIndexScanFromIteratorAndColumn(itB, jB);
 
-		this.leftScan = getIndexScanFromIteratorAndColumn(A, jA);
-		this.rightScan = getIndexScanFromIteratorAndColumn(B, jB);
+		// create the hash table for the inner table B
+		while (B.hasNext()) {
+			Tuple b = B.getNext();
+			SearchKey key = new SearchKey(b.getField(jB).toString());
+			multimap.add(key, b);
+		}
+		B.close();
 	}
 
 	private IndexScan getIndexScanFromIteratorAndColumn(Iterator iterator, Integer column)
@@ -65,7 +71,7 @@ public class HashJoin extends Iterator {
 			while(fsCast.hasNext())
 			{
 				Tuple tuple = fsCast.getNext();
-				hashIndex.insertEntry(new SearchKey((String) tuple.getField(column)), fsCast.getLastRID());
+				hashIndex.insertEntry(new SearchKey(tuple.getField(column).toString()), fsCast.getLastRID());
 			}
 			return new IndexScan(fsCast.getSchema(), hashIndex, fsCast.getHeapFile());
 		} 
@@ -84,32 +90,60 @@ public class HashJoin extends Iterator {
 
 
 	public boolean isOpen() {
-    	return jAScan.isOpen() && jBScan.isOpen();
-  	}
+		return A.isOpen();
+	}
 
 	public void close() {
-    	jAScan.close();
-    	jBScan.close();
-    	
-  	}
+		A.close();
+		multimap = null;
+		nextTuples = null;
+		nextPosition = 0;
+		jA = 0;
+		jB = 0;
+	}
 	public boolean hasNext() {
-    	return false;
-  	}
+		if (nextTuples != null) {
+			Tuple result = nextTuples.get(nextPosition++);
+			if (nextPosition == nextTuples.size()) {
+				nextTuples = null;
+				nextPosition = 0;
+				return hasNext();
+			}
+		}
+
+		while (this.A.hasNext()) {
+			Tuple tupleA = this.A.getNext();
+			SearchKey key = new SearchKey(tupleA.getField(this.jA).toString());
+			if (multimap.containsKey(key)) {
+				List<Tuple> tupleMatches = Arrays.asList(multimap.getAll(key));
+				nextTuples = new ArrayList<Tuple>();
+				for (Tuple tupleMatch : tupleMatches) {
+					nextTuples.add(Tuple.join(tupleA, tupleMatch, schema));
+				}
+				nextPosition = 0;
+				return true;
+			}
+		}
+		return false;
+	}
 
 	public Tuple getNext() {
-    	return null;
-  	}
+		if(nextTuples == null) throw new IllegalStateException("HashJoin getNext() failed. ");
+		return nextTuples.get(nextPosition);
+	}
 
-  	public void restart() {
+	public void restart() {
+		A.restart();
+		if (nextTuples != null)
+			nextTuples.clear();
+		multimap = new HashTableDup();
+		nextPosition = 0;
+	}
 
-
-
-  	}
-
-  	public void explain(int depth) {
-  		indent(depth);
-  		System.out.println("HashJoin Iterator: ");
-  		jAScan.explain(depth + 1);
-  		jBScan.explain(depth + 1);
-  	}
+	public void explain(int depth) {
+		indent(depth);
+		System.out.println("HashJoin Iterator: ");
+		A.explain(depth + 1);
+		B.explain(depth + 1);
+	}
 }

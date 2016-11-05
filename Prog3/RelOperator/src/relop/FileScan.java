@@ -24,7 +24,7 @@ public class FileScan extends Iterator {
       this.lastRid = new RID();
   }
 
-  public void getHeapFile()
+  public HeapFile getHeapFile()
   {
     return heapFile;
   }

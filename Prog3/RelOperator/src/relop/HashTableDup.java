@@ -78,6 +78,45 @@ class HashTableDup extends Hashtable {
 
 		} // elsee
 
-	} // public Tuple[] getAll(SearchKey key)
+	}
 
-} // class HashTableDup extends Hashtable
+
+	public boolean containsKey(SearchKey key) {
+
+		// look up the key
+		Object match = get(key);
+		if (match == null) {
+
+			// not found
+			return false;
+
+		} else if (match instanceof Tuple) {
+
+			// return the single match
+			return true;
+
+		} else if (match instanceof Tuple[]) {
+
+			// return the matches
+			return true;
+
+		} else {
+
+			// convert ArrayList to Tuple[]
+			return true;
+
+		} // elsee
+
+	}
+
+
+    public void remove(SearchKey key)
+    {
+    	remove(key);
+    }
+
+    public void clear()
+    {
+    	clear();
+    }
+}
