@@ -95,6 +95,7 @@ public class HashJoin extends Iterator {
 
 	public void close() {
 		A.close();
+		if(B.isOpen()) B.close();
 		multimap = null;
 		nextTuples = null;
 		nextPosition = 0;
@@ -124,6 +125,8 @@ public class HashJoin extends Iterator {
 				return true;
 			}
 		}
+		nextTuples = null;
+		nextPosition = 0;
 		return false;
 	}
 
@@ -134,9 +137,7 @@ public class HashJoin extends Iterator {
 
 	public void restart() {
 		A.restart();
-		if (nextTuples != null)
-			nextTuples.clear();
-		multimap = new HashTableDup();
+		nextTuples = null;
 		nextPosition = 0;
 	}
 
