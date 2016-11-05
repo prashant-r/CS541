@@ -82,4 +82,15 @@ public abstract class Iterator {
       close();
     }
   }
-} // public abstract class Iterator
+
+  // public abstract class Iterator -getter and setter.
+  public Schema getSchema()
+  {
+    return schema;
+  }
+
+  public void setSchema(Schema schema)
+  {
+    this.schema = schema;
+  }
+} 

@@ -18,6 +18,7 @@ public class FileScan extends Iterator {
    * Constructs a file scan, given the schema and heap file.
    */
   public FileScan(Schema schema, HeapFile file) {
+      this.heapFile = file;
       this.heapScan = file.openScan();
       this.schema = schema;
       this.lastRid = new RID();
@@ -37,7 +38,6 @@ public class FileScan extends Iterator {
    */
   public void restart() {
       this.heapScan = heapFile.openScan();
-      this.schema = schema;
       this.lastRid = new RID();
   }
 
@@ -53,6 +53,8 @@ public class FileScan extends Iterator {
    */
   public void close() {
     if (heapScan != null ) heapScan.close();
+    lastRid = null;
+    heapFile = null;
   }
 
   /**
@@ -68,7 +70,7 @@ public class FileScan extends Iterator {
    * @throws IllegalStateException if no more tuples
    */
   public Tuple getNext() {
-    return (heapScan != null ) ? new Tuple(schema,  heapScan.getNext(lastRid)) : null;
+    return new Tuple(schema,  heapScan.getNext(lastRid));
   }
 
   /**

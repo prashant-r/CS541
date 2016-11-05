@@ -1,6 +1,7 @@
 package relop;
 
 import global.SearchKey;
+import index.HashScan;
 import heap.HeapFile;
 import index.HashIndex;
 
@@ -9,11 +10,19 @@ import index.HashIndex;
  */
 public class KeyScan extends Iterator {
 
+  private HashIndex hashIndex;
+  private HashScan hashScan;
+  private SearchKey searchKey;
+  private HeapFile heapFile;
   /**
    * Constructs an index scan, given the hash index and schema.
    */
   public KeyScan(Schema schema, HashIndex index, SearchKey key, HeapFile file) {
-    throw new UnsupportedOperationException("Not implemented");
+    this.schema = schema;
+    this.hashIndex = index;
+    this.searchKey = key;
+    this.heapFile = file;
+    if(hashIndex != null) hashScan = hashIndex.openScan(searchKey);
   }
 
   /**
@@ -21,35 +30,42 @@ public class KeyScan extends Iterator {
    * child iterators, and increases the indent depth along the way.
    */
   public void explain(int depth) {
-    throw new UnsupportedOperationException("Not implemented");
+
+    System.out.println("KeyScan iterator : ");
+    indent(depth);
+
   }
 
   /**
    * Restarts the iterator, i.e. as if it were just constructed.
    */
   public void restart() {
-    throw new UnsupportedOperationException("Not implemented");
+    if(hashIndex != null) hashScan = hashIndex.openScan(searchKey);
   }
 
   /**
    * Returns true if the iterator is open; false otherwise.
    */
   public boolean isOpen() {
-    throw new UnsupportedOperationException("Not implemented");
+    return hashScan!= null;
   }
 
   /**
    * Closes the iterator, releasing any resources (i.e. pinned pages).
    */
   public void close() {
-    throw new UnsupportedOperationException("Not implemented");
+    if(hashScan != null ) hashScan.close();
+    hashScan = null;
+    hashIndex = null;
+    searchKey = null;
+    heapFile = null;
   }
 
   /**
    * Returns true if there are more tuples, false otherwise.
    */
   public boolean hasNext() {
-    throw new UnsupportedOperationException("Not implemented");
+    return hashScan.hasNext();
   }
 
   /**
@@ -58,7 +74,10 @@ public class KeyScan extends Iterator {
    * @throws IllegalStateException if no more tuples
    */
   public Tuple getNext() {
-    throw new UnsupportedOperationException("Not implemented");
+     return new Tuple( schema, heapFile.selectRecord(hashScan.getNext())) ;
   }
+
+
+
 
 } // public class KeyScan extends Iterator

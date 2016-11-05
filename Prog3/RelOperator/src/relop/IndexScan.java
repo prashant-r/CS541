@@ -19,7 +19,8 @@ public class IndexScan extends Iterator {
    * Constructs an index scan, given the hash index and schema.
    */
   public IndexScan(Schema schema, HashIndex index, HeapFile file) {
-  
+    
+    this.schema = schema;
     this.hashIndex = index;
     this.heapFile = file;
     this.bucketScan = (hashIndex != null) ? hashIndex.openScan() : null;
@@ -38,7 +39,7 @@ public class IndexScan extends Iterator {
    * Restarts the iterator, i.e. as if it were just constructed.
    */
   public void restart() {
-   this.bucketScan = hashIndex != null ? hashIndex.openScan() : null;
+   this.bucketScan = (hashIndex != null) ? hashIndex.openScan() : null;
   }
 
   /**
@@ -53,6 +54,10 @@ public class IndexScan extends Iterator {
    */
   public void close() {
       if (bucketScan!= null) bucketScan.close();  
+      lastRid =null;
+      heapFile = null;
+      hashIndex = null;
+      bucketScan = null;
   }
 
   /**
@@ -68,7 +73,7 @@ public class IndexScan extends Iterator {
    * @throws IllegalStateException if no more tuples
    */
   public Tuple getNext() {
-    return (bucketScan.hasNext()) ? (new Tuple( schema, heapFile.selectRecord(bucketScan.getNext())) ): null;
+    return new Tuple( schema, heapFile.selectRecord(bucketScan.getNext()));
   }
 
   /**
