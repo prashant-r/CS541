@@ -35,5 +35,3 @@ If you need to increase memory or core count or pass any [other parameter](https
 If you execute these images without scripts mentioned above, please:
 * Remeber to name master container as spark_master for correct working on linkage.
 * Read [documentation](http://sometechshit.blogspot.ru/2015/04/running-spark-standalone-cluster-in.html) to understand what's going on.
-
-I also recommend you to use [Zeppelin](https://zeppelin.incubator.apache.org/) instead of spark shell for working with data. It has pleasant GUI and IPython like functionality. Please use docker [container](https://registry.hub.docker.com/u/epahomov/docker-zeppelin/) for that.
