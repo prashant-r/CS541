@@ -74,11 +74,15 @@ public class Selection extends Iterator {
         Tuple nextTuple = scanIterator.getNext();
         for(Predicate pred : predicates)
           if(!pred.evaluate(nextTuple)) {
-            found = false; break;
+            found = false;
+          }
+          else
+          {
+            found = true; break;
           }
         if(found) {
           currentTuple = nextTuple;
-         break; 
+          break; 
         } 
     }
     done = !found;
