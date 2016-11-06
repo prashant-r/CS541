@@ -1,8 +1,8 @@
-Docker container for spark standalone cluster (Master-Slave architecture).
-=================================
-Prerequisites: install docker on your machine,ensure to have cmder & cygwin installed if on windows pc.
+Docker container for spark localhost cluster (Master-Slave architecture).
 =================================
 
+Prerequisites: install docker on your machine,ensure to have cmder & cygwin installed if on windows pc.
+-------------------------------------------------------------------------------------------------------
 To run master execute:
 
 ```
