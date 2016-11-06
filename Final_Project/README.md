@@ -1,7 +1,7 @@
-Docker container for spark stand alone cluster
+Docker container for spark standalone cluster (Master-Slave architecture).
 =================================
-
-This repository contains a set of scripts and configuration files to run a [Apache Spark](https://spark.apache.org/) standalone cluster from [Docker](https://www.docker.io/) container.
+Prerequisites: install docker on your machine,ensure to have cmder & cygwin installed if on windows pc.
+=================================
 
 To run master execute:
 
