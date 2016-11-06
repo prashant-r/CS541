@@ -1,4 +1,4 @@
-Docker container for spark localhost cluster (Master-Slave architecture).
+Spark cluster on local.
 =================================
 
 Prerequisites: install docker on your machine,ensure to have cmder & cygwin installed if on windows pc.
