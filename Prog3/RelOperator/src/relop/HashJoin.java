@@ -26,6 +26,8 @@ import index.*;
 //      place row c in table C
 
 
+// More docs info : http://research.cs.wisc.edu/coral/mini_doc/intro/single_user.html
+
 public class HashJoin extends Iterator {
 
 	private int jA;
