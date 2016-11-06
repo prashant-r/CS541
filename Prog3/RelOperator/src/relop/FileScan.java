@@ -13,6 +13,7 @@ public class FileScan extends Iterator {
   private HeapScan heapScan;
   private RID lastRid;
   private HeapFile heapFile;
+  private boolean done;
 
   /**
    * Constructs a file scan, given the schema and heap file.
@@ -22,6 +23,7 @@ public class FileScan extends Iterator {
       this.heapScan = file.openScan();
       this.schema = schema;
       this.lastRid = new RID();
+      this.done = true;
   }
 
   public HeapFile getHeapFile()
@@ -45,6 +47,7 @@ public class FileScan extends Iterator {
   public void restart() {
       this.heapScan = heapFile.openScan();
       this.lastRid = new RID();
+      this.done = true;
   }
 
   /**
@@ -62,13 +65,15 @@ public class FileScan extends Iterator {
     lastRid = null;
     heapFile = null;
     heapScan = null;
+    this.done = true;
   }
 
   /**
    * Returns true if there are more tuples, false otherwise.
    */
   public boolean hasNext() {
-    return heapScan.hasNext();
+    done = !(heapScan.hasNext());
+    return !done;
   }
 
   /**
@@ -77,6 +82,7 @@ public class FileScan extends Iterator {
    * @throws IllegalStateException if no more tuples
    */
   public Tuple getNext() {
+    if(done) throw new IllegalStateException("FileScan getNext() failed.");
     return new Tuple(schema,  heapScan.getNext(lastRid));
   }
 

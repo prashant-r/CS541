@@ -14,6 +14,7 @@ public class KeyScan extends Iterator {
   private HashScan hashScan;
   private SearchKey searchKey;
   private HeapFile heapFile;
+  private boolean done;
   /**
    * Constructs an index scan, given the hash index and schema.
    */
@@ -23,6 +24,7 @@ public class KeyScan extends Iterator {
     this.searchKey = key;
     this.heapFile = file;
     this.hashScan = hashIndex.openScan(searchKey);
+    this.done = true;
   }
 
   /**
@@ -41,6 +43,7 @@ public class KeyScan extends Iterator {
    */
   public void restart() {
     if(hashIndex != null) hashScan = hashIndex.openScan(searchKey);
+    this.done = true;
   }
 
   /**
@@ -59,13 +62,15 @@ public class KeyScan extends Iterator {
     hashIndex = null;
     searchKey = null;
     heapFile = null;
+    this.done = true;
   }
 
   /**
    * Returns true if there are more tuples, false otherwise.
    */
   public boolean hasNext() {
-    return hashScan.hasNext();
+    done = !(hashScan.hasNext());
+    return !done;
   }
 
   /**
@@ -74,6 +79,7 @@ public class KeyScan extends Iterator {
    * @throws IllegalStateException if no more tuples
    */
   public Tuple getNext() {
+     if(done) throw new IllegalStateException("KeyScan getNext() failed. ");
      return new Tuple( schema, heapFile.selectRecord(hashScan.getNext())) ;
   }
 

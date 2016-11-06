@@ -15,6 +15,7 @@ public class IndexScan extends Iterator {
   private HeapFile heapFile;
   private RID lastRid;
   private BucketScan bucketScan;
+  private boolean done;
   /**
    * Constructs an index scan, given the hash index and schema.
    */
@@ -24,6 +25,7 @@ public class IndexScan extends Iterator {
     this.hashIndex = index;
     this.heapFile = file;
     this.bucketScan = (hashIndex != null) ? hashIndex.openScan() : null;
+    this.done = true;
   }
 
   /**
@@ -40,6 +42,7 @@ public class IndexScan extends Iterator {
    */
   public void restart() {
    this.bucketScan = (hashIndex != null) ? hashIndex.openScan() : null;
+   this.done = true;
   }
 
   /**
@@ -58,13 +61,15 @@ public class IndexScan extends Iterator {
       heapFile = null;
       hashIndex = null;
       bucketScan = null;
+      this.done = true;
   }
 
   /**
    * Returns true if there are more tuples, false otherwise.
    */
   public boolean hasNext() {
-    return (bucketScan != null )? bucketScan.hasNext() : false; 
+    done = !((bucketScan != null )? bucketScan.hasNext() : false); 
+    return !done;
   }
 
   /**
@@ -73,6 +78,7 @@ public class IndexScan extends Iterator {
    * @throws IllegalStateException if no more tuples
    */
   public Tuple getNext() {
+    if(done) throw new IllegalStateException("IndexScan getNext() failed. ");
     return new Tuple( schema, heapFile.selectRecord(bucketScan.getNext()));
   }
 
