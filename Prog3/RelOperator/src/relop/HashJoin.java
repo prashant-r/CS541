@@ -7,7 +7,7 @@ import index.*;
 
 // Taken from :
 
-// Hash Join algorithm used : 
+// Hash Join algorithm used :
 
 //https://rosettacode.org/wiki/Hash_join
 // let A = the first input table (or ideally, the larger one)
@@ -35,127 +35,200 @@ public class HashJoin extends Iterator {
 	private IndexScan A;
 	private IndexScan B;
 	private HashTableDup multimap;
-	private List<Tuple> nextTuples;
+	private Tuple nextTuple = null;
+	private Tuple[] nextTuples;
+	private int currenthashval = -1;
 	private int nextPosition;
 	private Tuple currentTuple;
 
-	public HashJoin(Iterator itA, Iterator itB, Integer jA, Integer jB)
-	{
+	public HashJoin(Iterator itA, Iterator itB, Integer jA, Integer jB) {
 		schema = Schema.join(itA.schema, itB.schema);
 		this.jA = jA;
 		this.jB = jB;
 		multimap = new HashTableDup();
-		A = getIndexScanFromIteratorAndColumn(itA, jA);
-		B = getIndexScanFromIteratorAndColumn(itB, jB);
 
 		nextPosition = 0;
 		nextTuples = null;
 		currentTuple = null;
-		// create the hash table for the inner table B
-		while (B.hasNext()) {
-			Tuple b = B.getNext();
-			SearchKey key = new SearchKey(b.getField(jB).toString());
-			multimap.add(key, b);
-		}
-		B.close();
+
+		if (itA instanceof IndexScan)
+			this.A = (IndexScan) itA;
+
+		this.A= getIndexScanFromIteratorAndColumn(itA,jA);
+
+		if (itB instanceof IndexScan)
+			this.B = (IndexScan) itB;
+
+		this.B= getIndexScanFromIteratorAndColumn(itB,jB);
+
 	}
 
 	private IndexScan getIndexScanFromIteratorAndColumn(Iterator iterator, Integer column)
 	{
-		if(iterator instanceof IndexScan)
-		{
-			return (IndexScan) iterator;
-		}
-		else if(iterator instanceof FileScan)
-		{
-			// temporary HashIndex
-			HashIndex hashIndex = new HashIndex(null);
+		return (iterator instanceof FileScan) ?
+				getIndexScanFromFileScan((FileScan) iterator, column, ((FileScan) iterator).getHeapFile()) :
+				getIndexScan(iterator, column);
 
-			// Case the FileScan
-			FileScan fsCast = (FileScan) iterator;
-			// create the temporary HashIndex
-			while(fsCast.hasNext())
-			{
-				Tuple tuple = fsCast.getNext();
-				hashIndex.insertEntry(new SearchKey(tuple.getField(column).toString()), fsCast.getLastRID());
-			}
-			return new IndexScan(fsCast.getSchema(), hashIndex, fsCast.getHeapFile());
-		} 
-		else
-		{
-			// create the heapFile
-			HeapFile heapFile = new HeapFile(null);
-			while(iterator.hasNext())
-			{
-				heapFile.insertRecord(iterator.getNext().data);
-			}
-			FileScan materialized = new FileScan(iterator.getSchema(), heapFile);
-			return getIndexScanFromIteratorAndColumn(materialized,column);
-		}
 	}
 
-
-	public boolean isOpen() {
-		return A.isOpen();
-	}
-
-	public void close() {
-		A.close();
-		if(B.isOpen()) B.close();
-		multimap = null;
-		nextTuples = null;
-		nextPosition = 0;
-		currentTuple = null;
-		jA = 0;
-		jB = 0;
-	}
-	public boolean hasNext() {
-		currentTuple = prefetchTuple();
-		return currentTuple != null;
-	}
-
-	public Tuple prefetchTuple()
+	public IndexScan getIndexScanFromFileScan(FileScan fs, Integer field, HeapFile hpfile)
 	{
-		if (nextTuples != null) {
-			Tuple prefetched = nextTuples.get(nextPosition++);
-			if (nextPosition == nextTuples.size()) {
-				nextTuples = null;
-				nextPosition = 0;
-			}
-			return prefetched;
+		HashIndex hi = new HashIndex(null);
+		while(fs.hasNext()){
+			Tuple t = fs.getNext();
+			hi.insertEntry(new SearchKey(t.getField(field).toString()), fs.getLastRID());
 		}
-		
-		while (this.A.hasNext()) {
-			Tuple tupleA = this.A.getNext();
-			SearchKey key = new SearchKey(tupleA.getField(this.jA).toString());
-			if (multimap.containsKey(key)) {
-				List<Tuple> tupleMatches = Arrays.asList(multimap.getAll(key));
-				nextTuples = new ArrayList<Tuple>();
-				for (Tuple tupleMatch : tupleMatches) {
-					nextTuples.add(Tuple.join(tupleA, tupleMatch, schema));
-				}
-				return prefetchTuple();
-			}
+		IndexScan is = new IndexScan(fs.getSchema(),hi,hpfile);
+		return is;
+	}
+
+	public IndexScan getIndexScan(Iterator it, Integer field)
+	{
+		HeapFile hf = new HeapFile(null);
+		while(it.hasNext()){
+			hf.insertRecord(it.getNext().data);
 		}
-		return null;
+		FileScan temp = new FileScan(it.schema, hf);
+		return getIndexScanFromFileScan(temp, field, hf);
 	}
 
-	public Tuple getNext() {
-		if(currentTuple == null) throw new IllegalStateException("HashJoin getNext() failed. ");
-		return currentTuple;
-	}
-
-	public void restart() {
-		A.restart();
-		nextTuples = null;
-		nextPosition = 0;
-		currentTuple = null;
-	}
-
+	@Override
 	public void explain(int depth) {
 		indent(depth);
 		System.out.println("HashJoin Iterator: ");
 		A.explain(depth + 1);
 		B.explain(depth + 1);
+
+	}
+
+	@Override
+	public void restart() {
+		// TODO Auto-generated method stub
+		multimap = null;
+		A.restart();
+		B.restart();
+		nextTuple = null;
+		nextTuples = null;
+		currenthashval = (Integer) null;
+		currentTuple = null;
+	}
+
+	@Override
+	public boolean isOpen() {
+		// TODO Auto-generated method stub
+		if(A.isOpen()){
+			if(B.isOpen()){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public void close() {
+		// TODO Auto-generated method stub
+		A.close();
+		B.close();
+		nextTuples = null;
+		nextPosition = 0;
+		currentTuple = null;
+		nextTuple = null;
+		multimap = null;
+	}
+
+	public void constructMultiMap(int hashval)
+	{
+		A.restart();
+		multimap.clear();
+		while(A.hasNext())
+		{
+			int temp = A.getNextHash();
+			if(temp == hashval)
+			{
+				Tuple leftTuple = A.getNext();
+				multimap.add(new SearchKey(leftTuple.getField(jA).toString()), leftTuple);
+			}
+			else
+			{
+				A.getNext();
+			}
+		}
+	}
+
+	@Override
+	public boolean hasNext()
+	{
+		// TODO Auto-generated method stub
+
+		if(nextTuples == null)
+		{
+			if (!B.hasNext()) return false;
+
+			int nexthashval = B.getNextHash();
+			currentTuple = B.getNext();
+
+			if (nexthashval != currenthashval)
+			{
+				currenthashval = nexthashval;
+				constructMultiMap(currenthashval);
+			}
+			nextTuples = multimap.getAll(new SearchKey(currentTuple.getField(jB).toString()));
+			return CheckAndJoinTuples();
+		}
+		else
+		{
+			if(nextPosition == nextTuples.length)
+			{
+				nextTuples = null;
+				nextPosition = 0;
+				return hasNext();
+			}
+			else
+				return TryAndJoinTuples();
+
+		}
+	}
+
+	private boolean CheckAndJoinTuples()
+	{
+		nextPosition = 0;
+		if (nextTuples == null)
+			return hasNext();
+
+		if(nextPosition == nextTuples.length)
+		{
+			nextTuples = null;
+			return hasNext();
+		}
+
+		return TryAndJoinTuples();
+	}
+
+	private boolean TryAndJoinTuples()
+	{
+		while (nextPosition <= nextTuples.length - 1)
+		{
+			if (currentTuple.getField(jB).equals(nextTuples[nextPosition].getField(jA)))
+			{
+				nextTuple = Tuple.join(nextTuples[nextPosition], currentTuple, schema);
+				nextPosition++;
+				return true;
+			}
+			else
+			{
+				nextPosition++;
+			}
+		}
+		nextPosition = 0;
+		nextTuples = null;
+		return hasNext();
+	}
+
+	@Override
+	public Tuple getNext() {
+		// TODO Auto-generated method stub
+		if(nextTuple == null) throw new IllegalStateException("HashJoin getNext() failed. ");
+		return nextTuple;
+
 	}
 }
