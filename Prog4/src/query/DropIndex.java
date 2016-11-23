@@ -7,6 +7,7 @@ import parser.AST_DropIndex;
  */
 class DropIndex implements Plan {
 
+  public String idxname;
   /**
    * Optimizes the plan, given the parsed query.
    * 
@@ -14,6 +15,8 @@ class DropIndex implements Plan {
    */
   public DropIndex(AST_DropIndex tree) throws QueryException {
 
+    idxname = tree.getFileName();
+    QueryCheck.indexExists(idxname);
   } // public DropIndex(AST_DropIndex tree) throws QueryException
 
   /**
@@ -22,8 +25,11 @@ class DropIndex implements Plan {
   public void execute() {
 
     // print the output message
-    System.out.println("(Not implemented)");
-
+    //System.out.println("(Not implemented)");
+    HashIndex hashInd = new HashIndex(idxname);
+    hashInd.deleteFile();
+    Minibase.SystemCatalog.dropIndex(idxname);
+    
   } // public void execute()
 
 } // class DropIndex implements Plan
