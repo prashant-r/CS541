@@ -1,7 +1,14 @@
 package query;
 
+import global.Minibase;
+import global.RID;
+import global.SearchKey;
+import heap.HeapFile;
+import heap.HeapScan;
+import index.HashIndex;
 import parser.AST_CreateIndex;
-
+import relop.Schema;
+import relop.Tuple;
 /**
  * Execution plan for creating indexes.
  */
@@ -38,15 +45,12 @@ class CreateIndex implements Plan {
    * Executes the plan and prints applicable output.
    */
   public void execute() {
-
-    // print the output message
-    //System.out.println("(Not implemented)");
     Minibase.SystemCatalog.createIndex(idxname, tblname, colname);
-    HeapScan heapScan = new HeapFile(tablename).openScan();
+    HeapScan heapScan = new HeapFile(tblname).openScan();
     RID rid = new RID();
     while(heapScan.hasNext())
-      hashind.insertEntry(new SearchKey(new Tuple(schema,heapScan.getNext(rid)).getField(colname)), rid);
+      newHashIndex.insertEntry(new SearchKey(new Tuple(schema,heapScan.getNext(rid)).getField(colname)), rid);
     heapScan.close();
-  } // public void execute()
-
-} // class CreateIndex implements Plan
+    System.out.println("\n Created Index.");
+  } 
+}

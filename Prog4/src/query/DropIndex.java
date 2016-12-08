@@ -1,6 +1,14 @@
 package query;
 
 import parser.AST_DropIndex;
+import global.Minibase;
+import global.RID;
+import global.SearchKey;
+import heap.HeapFile;
+import heap.HeapScan;
+import index.HashIndex;
+import relop.Schema;
+import relop.Tuple;
 
 /**
  * Execution plan for dropping indexes.
@@ -17,19 +25,15 @@ class DropIndex implements Plan {
 
     idxname = tree.getFileName();
     QueryCheck.indexExists(idxname);
-  } // public DropIndex(AST_DropIndex tree) throws QueryException
+  }
 
   /**
    * Executes the plan and prints applicable output.
    */
   public void execute() {
-
-    // print the output message
-    //System.out.println("(Not implemented)");
     HashIndex hashInd = new HashIndex(idxname);
     hashInd.deleteFile();
     Minibase.SystemCatalog.dropIndex(idxname);
-    
-  } // public void execute()
-
-} // class DropIndex implements Plan
+    System.out.println("\n Index Dropped. "); 
+  }
+}

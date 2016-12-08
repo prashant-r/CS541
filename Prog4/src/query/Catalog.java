@@ -133,6 +133,33 @@ public class Catalog implements GlobalConst {
 
   } // protected void initCatFiles()
 
+  public void insert(String fileName) {
+    // Increment recCount by 1
+    RID rid = getFileRID(fileName, true);
+    byte[] data = f_rel.selectRecord(rid);
+    Tuple tuple = new Tuple(s_rel, data);
+    int recCount = tuple.getIntFld(1);
+    tuple.setIntFld(1, recCount + 1);
+    f_rel.updateRecord(rid, tuple.getData());
+  }
+  
+  public void delete(String fileName, int num) {
+    // Decrement recCount by 1
+    RID rid = getFileRID(fileName, true);
+    byte[] data = f_rel.selectRecord(rid);
+    Tuple tuple = new Tuple(s_rel, data);
+    int recCount = tuple.getIntFld(1);
+    tuple.setIntFld(1, recCount - num);
+    f_rel.updateRecord(rid, tuple.getData());
+  }
+
+  public int numRecords(String filename, boolean isTable){
+    RID rid = getFileRID(filename, isTable);
+    byte[] data = f_rel.selectRecord(rid);
+    Tuple tuple = new Tuple(s_rel, data);
+    int numRecord = tuple.getIntFld(1);
+    return numRecord;
+  }
   // --------------------------------------------------------------------------
 
   /**
@@ -160,6 +187,7 @@ public class Catalog implements GlobalConst {
         return rid;
       }
     }
+
 
     // otherwise, record not found
     scan.close();
